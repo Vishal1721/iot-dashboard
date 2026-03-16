@@ -3,7 +3,7 @@
  
 export const getAllUser = async () => {
   try {
-    const response = await api.get("/users");
+    const response = await api.get("/api/users");
     return response.data;
   } catch (error) {
     console.log("Failed to retrieve users:", error);
@@ -22,7 +22,7 @@ export const updateUser = async (userData) => {
             const { createdAt, updatedAt, ...rest } = userData;
             userData = rest;
         }
-        const response = await api.patch('/users/update', userData);
+        const response = await api.patch('/api/users/update', userData);
         // console.log(response.data.message);
         return response.data;
     } catch (error) {
@@ -33,7 +33,7 @@ export const updateUser = async (userData) => {
 
  export const deleteUser = async () => {
    try {
-     const response = await api.delete("/users/profile");
+     const response = await api.delete("/api/users/profile");
      return response.data;
    } catch (error) {
      console.error("Delete account error:", error);
