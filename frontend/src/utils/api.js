@@ -2,7 +2,7 @@ import axios from "axios";
 import { getToken } from "./auth";
 
 const api = axios.create({
-  baseURL: "https://iot-dashboard-v5ab.onrender.com/api",
+  baseURL: "https://iot-dashboard-v5ab.onrender.com",
 });
 
 api.interceptors.request.use(
