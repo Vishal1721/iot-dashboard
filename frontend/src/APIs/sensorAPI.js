@@ -6,7 +6,7 @@ import api from "@/utils/api";
 // ==============================
 export const createSensor = async (projectId, data) => {
   try {
-    const response = await api.post(`/api/projects/${projectId}/sensors`, data);
+    const response = await api.post(`/projects/${projectId}/sensors`, data);
     return response.data;
   } catch (error) {
     console.error("Create sensor error:", error);
@@ -25,7 +25,7 @@ export const createSensor = async (projectId, data) => {
 export const getSensorById = async (projectId, sensorId) => {
   try {
     const response = await api.get(
-      `/api/projects/${projectId}/sensor/get/${sensorId}`,
+      `/projects/${projectId}/sensor/get/${sensorId}`,
     );
     return response.data;
   } catch (error) {
@@ -45,7 +45,7 @@ export const getSensorById = async (projectId, sensorId) => {
 export const getSensorByProjectId = async (projectId) => {
   try {
     const response = await api.get(
-      `/api/projects/${projectId}/sensors/getByProject`,
+      `/projects/${projectId}/sensors/getByProject`,
     );
     return response.data;
   } catch (error) {
@@ -64,7 +64,7 @@ export const getSensorByProjectId = async (projectId) => {
 // ==============================
 export const getAllSensors = async (projectId) => {
   try {
-    const response = await api.post(`/api/projects/${projectId}/sensor/getAll`);
+    const response = await api.post(`/projects/${projectId}/sensor/getAll`);
     return response.data;
   } catch (error) {
     console.error("Get all sensors error:", error);
@@ -77,7 +77,7 @@ export const getAllSensors = async (projectId) => {
 };
 export const getAdminSensorsByProject = async (projectId) => {
   try {
-    const response = await api.get(`/api/admin/projects/${projectId}/sensors`);
+    const response = await api.get(`/admin/projects/${projectId}/sensors`);
     return response.data;
   } catch (error) {
     console.error("Get admin sensors error:", error);
@@ -94,7 +94,7 @@ export const getAdminSensorsByProject = async (projectId) => {
 export const updateSensor = async (projectId, sensorId, data) => {
   try {
     const response = await api.patch(
-      `/api/projects/${projectId}/sensor/update/${sensorId}`,
+      `/projects/${projectId}/sensor/update/${sensorId}`,
       data,
     );
     return response.data;
@@ -115,7 +115,7 @@ export const updateSensor = async (projectId, sensorId, data) => {
 export const deleteSensor = async (projectId, sensorId) => {
   try {
     const response = await api.delete(
-      `/api/projects/${projectId}/sensor/delete/${sensorId}`,
+      `/projects/${projectId}/sensor/delete/${sensorId}`,
     );
     return response.data;
   } catch (error) {
