@@ -3,7 +3,7 @@ import { getToken } from "@/utils/auth";
 
 // Create axios instance
 const api = axios.create({
-  baseURL: "http://localhost:3000/api",
+  baseURL: "https://iot-dashboard-v5ab.onrender.com",
 });
 
 // ==============================
