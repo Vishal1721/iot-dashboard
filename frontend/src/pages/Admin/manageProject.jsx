@@ -47,7 +47,7 @@ const containerVariants = {
 const itemVariants = {
   hidden: { opacity: 0, y: 50 },
   visible: { opacity: 1, y: 0, transition: { duration: 1.5 } },
-  hover: { scale: 1.05, transition: { duration: 0.3 } },
+  tap: { scale: 0.98, transition: { duration: 0.1 } },
 };
 
 const ManageProject = () => {
@@ -211,30 +211,40 @@ const ManageProject = () => {
                   <motion.div
                     key={project._id}
                     variants={itemVariants}
-                    whileFocus={{ scale: 1.05 }}
-                    whileHover="hover"
+                    whileTap="tap"
+                    className="w-80 md:w-64 lg:w-72 max-w-full"
                   >
-                    <Card className="bg-quaternary rounded-xl shadow-md w-80 md:w-64 lg:w-72 max-w-full h-fit">
-                      <CardHeader className=" bg-gradient-to-r from-foreground to-tertiary text-secondary  rounded-t-xl flex justify-between">
+                    <Card className="bg-quaternary rounded-xl shadow-md w-full h-fit">
+                      <CardHeader className="bg-gradient-to-r from-foreground to-tertiary text-secondary rounded-t-xl">
                         <div className="flex flex-row justify-between">
                           <HoverCard>
                             <HoverCardTrigger>
-                              <Trash2
-                                className="h-6 w-6 text-destructive cursor-pointer float-right"
-                                onClick={() => handleDelete(project._id)}
-                              />
+                              <motion.div
+                                whileTap={{ scale: 0.9 }}
+                                transition={{ duration: 0.1 }}
+                              >
+                                <Trash2
+                                  className="h-6 w-6 text-destructive cursor-pointer"
+                                  onClick={() => handleDelete(project._id)}
+                                />
+                              </motion.div>
                             </HoverCardTrigger>
                             <HoverCardContent className="text-foreground bg-gray-300 w-fit cursor-pointer">
                               Delete
                             </HoverCardContent>
                           </HoverCard>
 
-                          <Dialog open={showForm}>
-                            <DialogTrigger>
-                              <Pencil
-                                className="h-6 w-6 float-right text-secondary-foreground cursor-pointer"
-                                onClick={() => handleEdit(project)}
-                              />
+                          <Dialog open={showForm} onOpenChange={setShowForm}>
+                            <DialogTrigger asChild>
+                              <motion.div
+                                whileTap={{ scale: 0.9 }}
+                                transition={{ duration: 0.1 }}
+                              >
+                                <Pencil
+                                  className="h-6 w-6 text-secondary-foreground cursor-pointer"
+                                  onClick={() => handleEdit(project)}
+                                />
+                              </motion.div>
                             </DialogTrigger>
 
                             <DialogContent className="sm:max-w-md text-foreground font-bold bg-secondary rounded-xl">
@@ -298,19 +308,24 @@ const ManageProject = () => {
                                     Cancel
                                   </Button>
 
-                                  <Button
-                                    type="submit"
-                                    className="bg-foreground hover:bg-tertiary text-white"
+                                  <motion.div
+                                    whileTap={{ scale: 0.95 }}
+                                    transition={{ duration: 0.1 }}
                                   >
-                                    Update
-                                  </Button>
+                                    <Button
+                                      type="submit"
+                                      className="bg-foreground hover:bg-tertiary text-white"
+                                    >
+                                      Update
+                                    </Button>
+                                  </motion.div>
                                 </DialogFooter>
                               </form>
                             </DialogContent>
                           </Dialog>
                         </div>
 
-                        <div className="flex flex-col items-left -mr-0">
+                        <div className="flex flex-col items-left">
                           <CardTitle className="text-xl font-bold text-center">
                             {project.projectName}
                           </CardTitle>
@@ -331,28 +346,34 @@ const ManageProject = () => {
 
                         <p className="mb-1">
                           <span className="font-semibold">Name:</span>{" "}
-                          {project.owner
-                            ? `${project.owner.firstName} ${project.owner.lastName}`
+                          {projectUser
+                            ? `${projectUser.firstName} ${projectUser.lastName}`
                             : "Unknown"}
                         </p>
 
                         <p className="mb-1">
                           <span className="font-semibold">Reg No.:</span>{" "}
-                          {project.owner?.registerNumber || "Unknown"}
+                          {projectUser?.registerNumber || "Unknown"}
                         </p>
 
                         <p className="mb-1">
                           <span className="font-semibold">Batch:</span>{" "}
-                          {project.owner?.batch || "Unknown"}
+                          {projectUser?.batch || "Unknown"}
                         </p>
 
                         <div className="flex justify-center">
-                          <Button
-                            className="bg-foreground text-white hover:bg-tertiary hover:text-secondary font-semibold mt-2"
-                            onClick={() => handleExplore(project._id)}
+                          <motion.div
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ duration: 0.1 }}
+                            className="w-full"
                           >
-                            Explore
-                          </Button>
+                            <Button
+                              className="bg-foreground text-white hover:bg-tertiary hover:text-secondary font-semibold mt-2 w-full"
+                              onClick={() => handleExplore(project._id)}
+                            >
+                              Explore
+                            </Button>
+                          </motion.div>
                         </div>
                       </CardContent>
                     </Card>

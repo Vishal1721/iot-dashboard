@@ -40,8 +40,8 @@ const itemVariants = {
 };
 
 const Profile = () => {
-  const { user, fetchUserData, logout } = useAuth(); // ✅ merged logout here
-  const navigate = useNavigate(); // ✅ moved here
+  const { user, fetchUserData, logout } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   const [profileImageUrl, setProfileImageUrl] = useState("");
@@ -49,27 +49,27 @@ const Profile = () => {
   const [editUser, setEditUser] = useState({});
   const [error, setError] = useState("");
 
- useEffect(() => {
-  if (!user?._id) return;
+  useEffect(() => {
+    if (!user?._id) return;
 
-  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    user.email,
-  )}&background=random&color=ffffff&bold=true`;
+    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      user.email,
+    )}&background=random&color=ffffff&bold=true`;
 
-  setProfileImageUrl(avatarUrl);
-  setEditUser(user);
+    setProfileImageUrl(avatarUrl);
+    setEditUser(user);
 
-  const fetchProject = async () => {
-    try {
-      const projectsData = await getProjectsByUserId(user._id);
-      setProjects(projectsData || []);
-    } catch (error) {
-      console.error("Failed to fetch projects:", error);
-    }
-  };
+    const fetchProject = async () => {
+      try {
+        const projectsData = await getProjectsByUserId(user._id);
+        setProjects(projectsData || []);
+      } catch (error) {
+        console.error("Failed to fetch projects:", error);
+      }
+    };
 
-  fetchProject();
-}, [user?._id]);
+    fetchProject();
+  }, [user?._id]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -98,7 +98,6 @@ const Profile = () => {
     }
   };
 
-  // ✅ DELETE ACCOUNT HANDLER
   const handleDeleteAccount = async () => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete your account? This cannot be undone.",
@@ -109,8 +108,8 @@ const Profile = () => {
     const response = await deleteUser();
 
     if (response.status === "success") {
-      logout(); // 🔥 clear token + user
-      navigate("/login"); // 🔥 redirect to login
+      logout();
+      navigate("/login");
     } else {
       toast({
         variant: "destructive",
@@ -134,53 +133,58 @@ const Profile = () => {
             initial="hidden"
             animate="visible"
           >
-            <CardHeader className="bg-gradient-to-br from-foreground to-tertiary text-secondary rounded-t-lg pb-3">
+            <CardHeader className="bg-gradient-to-br from-primary to-blue-800 text-white rounded-t-lg pb-3">
               <div>
                 <Dialog>
                   <DialogTrigger className="w-full">
-                    <FaEdit className="float-right text-secondary text-2xl cursor-pointer" />
+                    <FaEdit className="float-right text-white text-2xl cursor-pointer hover:text-gray-200" />
                   </DialogTrigger>
 
-                  <DialogContent className="bg-secondary">
+                  <DialogContent className="bg-white">
                     <DialogHeader>
-                      <DialogTitle className="text-foreground font-semibold">
+                      <DialogTitle className="text-gray-800 font-semibold">
                         Edit Profile
                       </DialogTitle>
-                      <DialogDescription className="text-foreground font-semibold">
+                      <DialogDescription className="text-gray-600">
                         Update your profile details below.
                       </DialogDescription>
                     </DialogHeader>
 
-                    <div className="space-y-4 text-accent-foreground">
+                    <div className="space-y-4">
                       <Input
-                        className="bg-gray-100"
+                        className="bg-gray-50 border-gray-300 focus:border-blue-500"
                         name="username"
                         value={editUser.username}
                         onChange={handleInputChange}
+                        placeholder="Username"
                       />
                       <Input
-                        className="bg-gray-100"
+                        className="bg-gray-50 border-gray-300 focus:border-blue-500"
                         name="firstName"
                         value={editUser.firstName}
                         onChange={handleInputChange}
+                        placeholder="First Name"
                       />
                       <Input
-                        className="bg-gray-100"
+                        className="bg-gray-50 border-gray-300 focus:border-blue-500"
                         name="lastName"
                         value={editUser.lastName}
                         onChange={handleInputChange}
+                        placeholder="Last Name"
                       />
                       <Input
-                        className="bg-gray-100"
+                        className="bg-gray-50 border-gray-300 focus:border-blue-500"
                         name="registerNumber"
                         value={editUser.registerNumber}
                         onChange={handleInputChange}
+                        placeholder="Register Number"
                       />
                       <Input
-                        className="bg-gray-100"
+                        className="bg-gray-50 border-gray-300 focus:border-blue-500"
                         name="batch"
                         value={editUser.batch}
                         onChange={handleInputChange}
+                        placeholder="Batch"
                       />
                     </div>
 
@@ -188,7 +192,7 @@ const Profile = () => {
                       <DialogClose asChild>
                         <Button
                           onClick={handleSubmit}
-                          className="bg-foreground hover:bg-tertiary"
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           Save
                         </Button>
@@ -206,49 +210,50 @@ const Profile = () => {
                     className="rounded-full h-48 w-48 mb-4 border-4 border-white shadow-md"
                   />
                 ) : (
-                  <div className="rounded-full h-48 w-48 mb-4 bg-gray-500"></div>
+                  <div className="rounded-full h-48 w-48 mb-4 bg-gray-400"></div>
                 )}
 
-                <CardTitle className="text-xl font-bold mb-0 text-secondary">
+                <CardTitle className="text-xl font-bold mb-0 text-white">
                   My Profile
                 </CardTitle>
-                <CardDescription className="text-secondary">
+                <CardDescription className="text-gray-100">
                   View and edit your profile
                 </CardDescription>
               </div>
             </CardHeader>
 
-            <CardContent className="py-6 px-2 sm:px-4 md:px-8 bg-secondary rounded-b-lg">
-              <div className="grid grid-cols-2 gap-y-4 ">
-                <div className="font-semibold text-primary">Email:</div>
-                <div className="text-primary font-medium">{user.email}</div>
+            <CardContent className="py-6 px-2 sm:px-4 md:px-8 bg-gray-50 rounded-b-lg">
+              <div className="grid grid-cols-2 gap-y-4">
+                <div className="font-semibold text-gray-700">Email:</div>
+                <div className="text-gray-600 font-medium">{user.email}</div>
 
-                <div className="font-semibold text-primary">Username:</div>
-                <div className="text-primary font-medium">{user.username}</div>
+                <div className="font-semibold text-gray-700">Username:</div>
+                <div className="text-gray-600 font-medium">{user.username}</div>
 
-                <div className="font-semibold text-primary">First Name:</div>
-                <div className="text-primary font-medium">{user.firstName}</div>
+                <div className="font-semibold text-gray-700">First Name:</div>
+                <div className="text-gray-600 font-medium">
+                  {user.firstName}
+                </div>
 
-                <div className="font-semibold text-primary">Last Name:</div>
-                <div className="text-primary font-medium">{user.lastName}</div>
+                <div className="font-semibold text-gray-700">Last Name:</div>
+                <div className="text-gray-600 font-medium">{user.lastName}</div>
 
-                <div className="font-semibold text-primary">
+                <div className="font-semibold text-gray-700">
                   Register Number:
                 </div>
-                <div className="text-primary font-medium">
+                <div className="text-gray-600 font-medium">
                   {user.registerNumber}
                 </div>
 
-                <div className="font-semibold text-primary">Batch:</div>
-                <div className="text-primary font-medium">{user.batch}</div>
+                <div className="font-semibold text-gray-700">Batch:</div>
+                <div className="text-gray-600 font-medium">{user.batch}</div>
 
-                <div className="font-semibold text-primary">Role:</div>
-                <div className="text-primary font-medium">
+                <div className="font-semibold text-gray-700">Role:</div>
+                <div className="text-gray-600 font-medium">
                   {user.role === "user" ? "user" : "admin"}
                 </div>
               </div>
 
-              {/* ✅ DELETE ACCOUNT BUTTON ADDED HERE */}
               <div className="mt-6">
                 <Button
                   onClick={handleDeleteAccount}
@@ -262,7 +267,6 @@ const Profile = () => {
         </Card>
       </motion.div>
 
-      {/* Projects Section (unchanged) */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -270,41 +274,41 @@ const Profile = () => {
         className="w-full"
       >
         <Card className="shadow-lg mb-4 sm:mb-0 w-full">
-          <CardHeader className="bg-gradient-to-br from-foreground to-tertiary text-secondary rounded-t-lg pb-3">
+          <CardHeader className="bg-gradient-to-br from-primary to-blue-800 text-white rounded-t-lg pb-3">
             <CardTitle className="text-xl font-bold mb-0 text-center">
               Projects and Sensors
             </CardTitle>
-            <CardDescription className="text-base text-secondary text-center">
+            <CardDescription className="text-base text-gray-100 text-center">
               Here is the list of project you created
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="py-6 px-2 sm:px-4 md:px-8 bg-accent rounded-lg">
+          <CardContent className="py-6 px-2 sm:px-4 md:px-8 bg-gray-50 rounded-b-lg">
             {projects.map((project) => (
               <motion.div
                 key={project._id}
                 variants={itemVariants}
                 initial="hidden"
                 animate="visible"
-                className="mb-4 bg-secondary p-4 shadow-md"
+                className="mb-4 bg-white p-4 shadow-md rounded-lg border border-gray-200"
               >
-                <div className="mb-2 grid grid-cols-2 ">
-                  <div className="text-lg font-bold text-primary">
+                <div className="mb-2 grid grid-cols-2 gap-2">
+                  <div className="text-lg font-bold text-gray-800">
                     Project Name:
                   </div>
-                  <div className="text-lg font-bold text-primary">
+                  <div className="text-lg font-bold text-gray-800">
                     {project.projectName}
                   </div>
 
-                  <div className="text-primary font-medium">Description:</div>
-                  <div className="text-primary font-medium">
+                  <div className="text-gray-600 font-medium">Description:</div>
+                  <div className="text-gray-600 font-medium">
                     {project.description}
                   </div>
 
-                  <div className="text-primary font-medium">
+                  <div className="text-gray-600 font-medium">
                     MicroController:
                   </div>
-                  <div className="text-primary font-medium">
+                  <div className="text-gray-600 font-medium">
                     {project.MicroController}
                   </div>
                 </div>

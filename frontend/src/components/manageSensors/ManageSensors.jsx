@@ -181,165 +181,266 @@ const ManageSensors = ({ projectId, sensors, changeSensors, handleOpen }) => {
 
   return (
     <Tabs defaultValue="create" className="w-full">
-      <TabsList className="w-full grid grid-cols-3 gap-2">
-        <TabsTrigger value="create">Create</TabsTrigger>
-        <TabsTrigger value="update">Update</TabsTrigger>
-        <TabsTrigger value="delete">Delete</TabsTrigger>
+      <TabsList className="w-full grid grid-cols-3 gap-2 bg-gray-100 p-1 rounded-lg">
+        <TabsTrigger
+          value="create"
+          className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md transition-all"
+        >
+          Create
+        </TabsTrigger>
+        <TabsTrigger
+          value="update"
+          className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md transition-all"
+        >
+          Update
+        </TabsTrigger>
+        <TabsTrigger
+          value="delete"
+          className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md transition-all"
+        >
+          Delete
+        </TabsTrigger>
       </TabsList>
+
       {/* CREATE */}
       <TabsContent value="create">
-        <Card>
-          <CardHeader>
-            <CardTitle>Create Sensor</CardTitle>
-            <CardDescription>Add new sensor</CardDescription>
+        <Card className="bg-white border border-gray-200 shadow-lg mt-4">
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-t-lg">
+            <CardTitle className="text-white">Create Sensor</CardTitle>
+            <CardDescription className="text-gray-100">
+              Add new sensor to your project
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Label>Sensor Name</Label>
-            <Input
-              value={sensorName}
-              onChange={(e) => setSensorName(e.target.value)}
-            />
+          <CardContent className="space-y-4 p-6">
+            <div className="space-y-2">
+              <Label className="text-gray-700 font-medium">Sensor Name</Label>
+              <Input
+                value={sensorName}
+                onChange={(e) => setSensorName(e.target.value)}
+                className="bg-gray-50 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg"
+                placeholder="Enter sensor name"
+              />
+            </div>
 
-            <Label>Sensor Type</Label>
-            <Select
-              onValueChange={(value) => {
-                setSensorType(value);
-                if (value === "INPUT") {
-                  setSensorUnit("status");
-                  setSensorMinThreshold(0);
-                  setSensorMaxThreshold(1);
-                }
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="INPUT">INPUT</SelectItem>
-                  <SelectItem value="OUTPUT">OUTPUT</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <Label className="text-gray-700 font-medium">Sensor Type</Label>
+              <Select
+                onValueChange={(value) => {
+                  setSensorType(value);
+                  if (value === "INPUT") {
+                    setSensorUnit("status");
+                    setSensorMinThreshold("0");
+                    setSensorMaxThreshold("1");
+                  }
+                }}
+              >
+                <SelectTrigger className="bg-gray-50 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-gray-200">
+                  <SelectGroup>
+                    <SelectItem
+                      value="INPUT"
+                      className="hover:bg-gray-100 focus:bg-gray-100"
+                    >
+                      INPUT
+                    </SelectItem>
+                    <SelectItem
+                      value="OUTPUT"
+                      className="hover:bg-gray-100 focus:bg-gray-100"
+                    >
+                      OUTPUT
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
 
-            <Label>Unit</Label>
-            <Input
-              value={sensorType === "INPUT" ? "status" : sensorUnit}
-              onChange={(e) => setSensorUnit(e.target.value)}
-              disabled={sensorType === "INPUT"}
-            />
+            <div className="space-y-2">
+              <Label className="text-gray-700 font-medium">Unit</Label>
+              <Input
+                value={sensorType === "INPUT" ? "status" : sensorUnit}
+                onChange={(e) => setSensorUnit(e.target.value)}
+                disabled={sensorType === "INPUT"}
+                className={`bg-gray-50 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg ${sensorType === "INPUT" ? "bg-gray-100 text-gray-500" : ""}`}
+                placeholder="Enter unit (e.g., °C, %, status)"
+              />
+            </div>
 
-            <Label>Min Threshold</Label>
-            <Input
-              value={sensorType === "INPUT" ? "0" : sensorMinThreshold}
-              onChange={(e) => setSensorMinThreshold(e.target.value)}
-              disabled={sensorType === "INPUT"}
-            />
+            <div className="space-y-2">
+              <Label className="text-gray-700 font-medium">Min Threshold</Label>
+              <Input
+                value={sensorType === "INPUT" ? "0" : sensorMinThreshold}
+                onChange={(e) => setSensorMinThreshold(e.target.value)}
+                disabled={sensorType === "INPUT"}
+                className={`bg-gray-50 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg ${sensorType === "INPUT" ? "bg-gray-100 text-gray-500" : ""}`}
+                placeholder="Enter minimum threshold"
+                type="number"
+              />
+            </div>
 
-            <Label>Max Threshold</Label>
-            <Input
-              value={sensorType === "INPUT" ? "1" : sensorMaxThreshold}
-              onChange={(e) => setSensorMaxThreshold(e.target.value)}
-              disabled={sensorType === "INPUT"}
-            />
+            <div className="space-y-2">
+              <Label className="text-gray-700 font-medium">Max Threshold</Label>
+              <Input
+                value={sensorType === "INPUT" ? "1" : sensorMaxThreshold}
+                onChange={(e) => setSensorMaxThreshold(e.target.value)}
+                disabled={sensorType === "INPUT"}
+                className={`bg-gray-50 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg ${sensorType === "INPUT" ? "bg-gray-100 text-gray-500" : ""}`}
+                placeholder="Enter maximum threshold"
+                type="number"
+              />
+            </div>
           </CardContent>
 
-          <CardFooter className="flex justify-between">
-            <Button onClick={handleOpen}>Cancel</Button>
-            <Button onClick={handleCreateSensor} disabled={loading}>
-              {loading ? "Creating..." : "Create"}
+          <CardFooter className="flex justify-between p-6 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+            <Button
+              onClick={handleOpen}
+              className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateSensor}
+              disabled={loading}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+            >
+              {loading ? "Creating..." : "Create Sensor"}
             </Button>
           </CardFooter>
         </Card>
       </TabsContent>
-      // ADD THIS BELOW CREATE TabsContent
+
       {/* UPDATE */}
       <TabsContent value="update">
-        <Card>
-          <CardHeader>
-            <CardTitle>Update Sensor</CardTitle>
-            <CardDescription>Select a sensor to update</CardDescription>
+        <Card className="bg-white border border-gray-200 shadow-lg mt-4">
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-t-lg">
+            <CardTitle className="text-white">Update Sensor</CardTitle>
+            <CardDescription className="text-gray-100">
+              Select a sensor to update its details
+            </CardDescription>
           </CardHeader>
 
-          <CardContent className="space-y-3">
-            <Label>Select Sensor</Label>
-            <Select
-              onValueChange={(value) => {
-                setSensorId(value);
-                const selected = sensors.find((s) => s.id === value);
-                if (selected) {
-                  setSensorName(selected.sensorName);
-                  setSensorType(selected.sensorMode?.toUpperCase());
-                  setSensorUnit(selected.unit);
-                  setSensorMinThreshold(selected.minThreshold || "");
-                  setSensorMaxThreshold(selected.maxThreshold || "");
-                }
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Choose sensor" />
-              </SelectTrigger>
-              <SelectContent>
-                {sensors.map((sensor) => (
-                  <SelectItem key={sensor.id} value={sensor.id}>
-                    {sensor.sensorName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <CardContent className="space-y-4 p-6">
+            <div className="space-y-2">
+              <Label className="text-gray-700 font-medium">Select Sensor</Label>
+              <Select
+                onValueChange={(value) => {
+                  setSensorId(value);
+                  const selected = sensors.find((s) => s.id === value);
+                  if (selected) {
+                    setSensorName(selected.sensorName);
+                    setSensorType(selected.sensorMode?.toUpperCase());
+                    setSensorUnit(selected.unit);
+                    setSensorMinThreshold(selected.minThreshold || "");
+                    setSensorMaxThreshold(selected.maxThreshold || "");
+                  }
+                }}
+              >
+                <SelectTrigger className="bg-gray-50 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                  <SelectValue placeholder="Choose sensor" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-gray-200">
+                  <SelectGroup>
+                    {sensors.map((sensor) => (
+                      <SelectItem
+                        key={sensor.id}
+                        value={sensor.id}
+                        className="hover:bg-gray-100 focus:bg-gray-100"
+                      >
+                        {sensor.sensorName}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
 
-            <Label>Sensor Name</Label>
-            <Input
-              value={sensorName}
-              onChange={(e) => setSensorName(e.target.value)}
-            />
+            <div className="space-y-2">
+              <Label className="text-gray-700 font-medium">Sensor Name</Label>
+              <Input
+                value={sensorName}
+                onChange={(e) => setSensorName(e.target.value)}
+                className="bg-gray-50 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg"
+                placeholder="Enter sensor name"
+              />
+            </div>
 
-            <Label>Unit</Label>
-            <Input
-              value={sensorUnit}
-              onChange={(e) => setSensorUnit(e.target.value)}
-            />
+            <div className="space-y-2">
+              <Label className="text-gray-700 font-medium">Unit</Label>
+              <Input
+                value={sensorUnit}
+                onChange={(e) => setSensorUnit(e.target.value)}
+                className="bg-gray-50 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg"
+                placeholder="Enter unit"
+              />
+            </div>
           </CardContent>
 
-          <CardFooter className="flex justify-between">
-            <Button onClick={handleOpen}>Cancel</Button>
-            <Button onClick={handleUpdateSensor} disabled={loading}>
-              {loading ? "Updating..." : "Update"}
+          <CardFooter className="flex justify-between p-6 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+            <Button
+              onClick={handleOpen}
+              className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateSensor}
+              disabled={loading}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+            >
+              {loading ? "Updating..." : "Update Sensor"}
             </Button>
           </CardFooter>
         </Card>
       </TabsContent>
+
       {/* DELETE */}
       <TabsContent value="delete">
-        <Card>
-          <CardHeader>
-            <CardTitle>Delete Sensor</CardTitle>
-            <CardDescription>Select a sensor to delete</CardDescription>
+        <Card className="bg-white border border-gray-200 shadow-lg mt-4">
+          <CardHeader className="bg-gradient-to-r from-red-600 to-red-800 rounded-t-lg">
+            <CardTitle className="text-white">Delete Sensor</CardTitle>
+            <CardDescription className="text-gray-100">
+              Select a sensor to permanently delete
+            </CardDescription>
           </CardHeader>
 
-          <CardContent>
-            <Select onValueChange={(value) => setSensorId(value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose sensor" />
-              </SelectTrigger>
-              <SelectContent>
-                {sensors.map((sensor) => (
-                  <SelectItem key={sensor.id} value={sensor.id}>
-                    {sensor.sensorName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <CardContent className="p-6">
+            <div className="space-y-2">
+              <Label className="text-gray-700 font-medium">Select Sensor</Label>
+              <Select onValueChange={(value) => setSensorId(value)}>
+                <SelectTrigger className="bg-gray-50 border border-gray-300 focus:border-red-500 focus:ring-1 focus:ring-red-500">
+                  <SelectValue placeholder="Choose sensor" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-gray-200">
+                  <SelectGroup>
+                    {sensors.map((sensor) => (
+                      <SelectItem
+                        key={sensor.id}
+                        value={sensor.id}
+                        className="hover:bg-gray-100 focus:bg-gray-100"
+                      >
+                        {sensor.sensorName}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
 
-          <CardFooter className="flex justify-between">
-            <Button onClick={handleOpen}>Cancel</Button>
+          <CardFooter className="flex justify-between p-6 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+            <Button
+              onClick={handleOpen}
+              className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors"
+            >
+              Cancel
+            </Button>
             <Button
               onClick={handleDelete}
               disabled={loading}
-              className="bg-red-600 text-white"
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors"
             >
-              {loading ? "Deleting..." : "Delete"}
+              {loading ? "Deleting..." : "Delete Sensor"}
             </Button>
           </CardFooter>
         </Card>

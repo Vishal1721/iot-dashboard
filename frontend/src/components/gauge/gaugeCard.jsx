@@ -12,21 +12,23 @@ import { formatDate } from "@/utils/time-functions";
 const GaugeCard = ({ sensors, sensorData }) => {
   return (
     <div className="lg:px-16">
-      <Card className="h-auto bg-quaternary rounded-xl md:rounded-2xl shadow-xl mb-6">
-        <CardHeader className="flex items-center justify-between p-4">
-          <CardTitle className="text-2xl font-bold">Output Sensors</CardTitle>
-          <CardDescription className="text-lg text-center">
+      <Card className="h-auto bg-white rounded-xl md:rounded-2xl shadow-lg mb-6 border border-gray-200">
+        <CardHeader className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-600 to-blue-800 rounded-t-xl">
+          <CardTitle className="text-2xl font-bold text-white">
+            Output Sensors
+          </CardTitle>
+          <CardDescription className="text-lg text-center text-gray-100">
             Sensor data which are sent from microController to server.
           </CardDescription>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="p-6 bg-gray-50 rounded-b-xl">
           {sensors?.length === 0 ? (
-            <CardDescription className="text-lg text-center font-semibold">
+            <CardDescription className="text-lg text-center font-semibold text-gray-600">
               No output sensors found.
             </CardDescription>
           ) : (
-            <div className="w-full flex flex-wrap justify-center gap-4 overflow-auto">
+            <div className="w-full flex flex-wrap justify-center gap-6 overflow-auto">
               {(sensorData || []).map((data, index) => {
                 const sensor = sensors[index];
 
@@ -44,18 +46,18 @@ const GaugeCard = ({ sensors, sensorData }) => {
                 return (
                   <Card
                     key={index}
-                    className="bg-secondary rounded-xl shadow-xl w-80 sm:w-64 lg:w-72 max-w-full mb-6"
+                    className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow w-80 sm:w-64 lg:w-72 max-w-full mb-6 border border-gray-200"
                   >
-                    <CardHeader className="flex flex-col items-center justify-center h-16">
-                      <CardTitle className="text-xl font-bold text-center">
+                    <CardHeader className="flex flex-col items-center justify-center h-16 bg-gray-50 rounded-t-xl border-b border-gray-200">
+                      <CardTitle className="text-xl font-bold text-gray-800">
                         {sensor?.name}
                       </CardTitle>
-                      <CardDescription className="text-base font-medium text-center">
+                      <CardDescription className="text-base font-medium text-gray-600">
                         {sensor?.type}
                       </CardDescription>
                     </CardHeader>
 
-                    <CardContent className="flex flex-col items-center">
+                    <CardContent className="flex flex-col items-center p-4">
                       <GaugeComponent
                         value={latestData ? Number(latestData.value) : 0}
                         minValue={safeMin}
@@ -82,7 +84,7 @@ const GaugeCard = ({ sensors, sensorData }) => {
                               },
                             },
                             {
-                              limit: safeMax, // ✅ FIXED (was max + 10)
+                              limit: safeMax,
                               color: "#EA4228",
                               showTick: true,
                               tooltip: {
@@ -93,19 +95,23 @@ const GaugeCard = ({ sensors, sensorData }) => {
                         }}
                       />
 
-                      <p className="text-center mt-2">
-                        {latestData ? Number(latestData.value) : 0}{" "}
-                        {sensor?.unit}
-                      </p>
+                      <div className="text-center mt-4 space-y-2">
+                        <p className="text-xl font-semibold text-gray-800">
+                          {latestData ? Number(latestData.value) : 0}{" "}
+                          <span className="text-sm font-normal text-gray-600">
+                            {sensor?.unit}
+                          </span>
+                        </p>
 
-                      <p className="text-gray-700 text-sm text-center font-medium mt-2">
-                        Last modified:
-                        <span className="font-bold ml-1">
-                          {latestData
-                            ? formatDate(latestData.timestamp)
-                            : "N/A"}
-                        </span>
-                      </p>
+                        <p className="text-gray-600 text-sm text-center font-medium">
+                          Last modified:
+                          <span className="font-semibold text-gray-800 ml-1">
+                            {latestData
+                              ? formatDate(latestData.timestamp)
+                              : "N/A"}
+                          </span>
+                        </p>
+                      </div>
                     </CardContent>
                   </Card>
                 );
