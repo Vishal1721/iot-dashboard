@@ -16,7 +16,7 @@ export const createProjects = async (data) => {
 // Read all projects by using userId
 export const getProjectsByUserId = async (userId) => {
   try {
-    const response = await api.get(`/projects/getByUser/${userId}`);
+    const response = await api.get(`/api/projects/getByUser/${userId}`);
     return response.data;
   } catch (error) {
     return {
@@ -29,7 +29,7 @@ export const getProjectsByUserId = async (userId) => {
 // Read all projects
 export const getAllProjects = async () => {
   try {
-    const response = await api.get("/projects/all");
+    const response = await api.get("/api/projects/all");
     return response.data;
   } catch (error) {
     return {
@@ -42,7 +42,7 @@ export const getAllProjects = async () => {
 // Read a project by using projectId
 export const getProjectById = async (projectId) => {
   try {
-    const response = await api.get(`/projects/get/${projectId}`);
+    const response = await api.get(`/api/projects/get/${projectId}`);
     return response.data;
   } catch (error) {
     return {
@@ -56,7 +56,7 @@ export const getProjectById = async (projectId) => {
 export const updateProject = async (projectId, data) => {
   try {
     const response = await api.patch(
-      `/projects/update/${projectId}`,
+      `/api/projects/update/${projectId}`,
       data
     );
     return response.data;
@@ -72,7 +72,7 @@ export const updateProject = async (projectId, data) => {
 export const deleteProject = async (projectId) => {
   try {
     const response = await api.delete(
-      `/projects/delete/${projectId}`
+      `/api/projects/delete/${projectId}`
     );
     return response.data;
   } catch (error) {
