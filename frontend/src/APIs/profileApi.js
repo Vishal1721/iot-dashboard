@@ -2,7 +2,7 @@ import api from "@/utils/api";
 
 export const getProjectsByUserId = async (userId) => {
   try {
-    const response = await api.get(`/projects/getByUser/${userId}`);
+    const response = await api.get(`/api/projects/getByUser/${userId}`);
 
     console.log("Projects fetched successfully:", response.data);
 
