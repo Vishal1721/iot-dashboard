@@ -204,8 +204,13 @@ const ManageProject = () => {
           >
             {projects.length > 0 ? (
               projects.map((project) => {
+                const ownerId =
+                  typeof project.owner === "object"
+                    ? project.owner._id
+                    : project.owner;
+
                 const projectUser = allUsers.find(
-                  (u) => u._id.toString() === project.owner.toString(),
+                  (u) => u._id.toString() === ownerId?.toString(),
                 );
                 return (
                   <motion.div
