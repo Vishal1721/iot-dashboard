@@ -1,13 +1,10 @@
-// src/utils/api.js
-
 import axios from "axios";
 import { getToken } from "./auth";
 
 const api = axios.create({
-  baseURL: "https://iot-dashboard-v5ab.onrender.com", // backend URL ONLY
+  baseURL: "https://iot-dashboard-v5ab.onrender.com/api",
 });
 
-// Attach token automatically
 api.interceptors.request.use(
   (config) => {
     const token = getToken();
