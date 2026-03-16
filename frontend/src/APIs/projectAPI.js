@@ -3,7 +3,7 @@ import api from "@/utils/api";
 // Create a new project
 export const createProjects = async (data) => {
   try {
-    const response = await api.post("/projects", data);
+    const response = await api.post("/api/projects", data);
     return response.data;
   } catch (error) {
     return {
