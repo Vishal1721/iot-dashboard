@@ -21,18 +21,7 @@ import {
 import { Chart, ChartTooltip, ChartTooltipContent } from "@/components/ui";
 import { calculateDailyAverages } from "@/utils/time-functions";
 
-const colors = [
-  "#3B82F6",
-  "#EC4899",
-  "#10B981",
-  "#F97316",
-  "#06B6D4",
-  "#8B5CF6",
-  "#F59E0B",
-  "#EF4444",
-  "#6366F1",
-  "#14B8A6",
-];
+const colors = ["#3B82F6", "#EC4899", "#10B981", "#F97316", "#06B6D4", "#8B5CF6", "#F59E0B", "#EF4444", "#6366F1", "#14B8A6"];
 
 export const LineChartCard = ({ sensors, sensorData }) => {
   // Create a unified chartData array
@@ -81,36 +70,36 @@ export const LineChartCard = ({ sensors, sensorData }) => {
             <Chart config={chartConfig}>
               <ResponsiveContainer width="100%" height={400}>
                 <LineChart data={chartData}>
-                  <CartesianGrid
-                    vertical={false}
+                  <CartesianGrid 
+                    vertical={false} 
                     stroke="#E5E7EB"
                     strokeDasharray="3 3"
                   />
-                  <XAxis
-                    dataKey="date"
-                    tickLine={false}
-                    axisLine={false}
+                  <XAxis 
+                    dataKey="date" 
+                    tickLine={false} 
+                    axisLine={false} 
                     tickMargin={8}
-                    tick={{ fill: "#4B5563", fontSize: 12 }}
+                    tick={{ fill: '#4B5563', fontSize: 12 }}
                   />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
+                  <YAxis 
+                    tickLine={false} 
+                    axisLine={false} 
                     tickMargin={2}
-                    tick={{ fill: "#4B5563", fontSize: 12 }}
+                    tick={{ fill: '#4B5563', fontSize: 12 }}
                   />
-                  <Tooltip
+                  <Tooltip 
                     content={
-                      <ChartTooltipContent
-                        hideLabel={false}
+                      <ChartTooltipContent 
+                        hideLabel={false} 
                         className="bg-white border border-gray-200 shadow-lg rounded-lg p-3"
                       />
-                    }
+                    } 
                   />
-                  <Legend
+                  <Legend 
                     wrapperStyle={{
-                      paddingTop: "20px",
-                      color: "#374151",
+                      paddingTop: '20px',
+                      color: '#374151'
                     }}
                   />
                   {sensors.map((sensor, index) => (
@@ -124,13 +113,13 @@ export const LineChartCard = ({ sensors, sensorData }) => {
                       dot={{
                         fill: colors[index % colors.length],
                         r: 4,
-                        strokeWidth: 0,
+                        strokeWidth: 0
                       }}
                       activeDot={{
                         r: 6,
                         fill: colors[index % colors.length],
-                        stroke: "#FFFFFF",
-                        strokeWidth: 2,
+                        stroke: '#FFFFFF',
+                        strokeWidth: 2
                       }}
                       isAnimationActive={false}
                       connectNulls={true}

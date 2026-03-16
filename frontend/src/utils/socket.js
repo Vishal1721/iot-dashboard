@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 
-const SOCKET_SERVER_URL = "https://iot-backend.onrender.com/api/"; // or from env
+const SOCKET_SERVER_URL = "http://localhost:3000"; // or from env
 
 const socket = io(SOCKET_SERVER_URL, {
   autoConnect: true,

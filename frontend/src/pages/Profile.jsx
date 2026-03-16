@@ -231,9 +231,7 @@ const Profile = () => {
                 <div className="text-gray-600 font-medium">{user.username}</div>
 
                 <div className="font-semibold text-gray-700">First Name:</div>
-                <div className="text-gray-600 font-medium">
-                  {user.firstName}
-                </div>
+                <div className="text-gray-600 font-medium">{user.firstName}</div>
 
                 <div className="font-semibold text-gray-700">Last Name:</div>
                 <div className="text-gray-600 font-medium">{user.lastName}</div>

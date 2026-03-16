@@ -4,7 +4,7 @@ import axios from "axios";
 import { getToken } from "./auth";
 
 const api = axios.create({
-  baseURL: "https://iot-backend.onrender.com", // backend URL ONLY
+  baseURL: "http://localhost:3000", // backend URL ONLY
 });
 
 // Attach token automatically
