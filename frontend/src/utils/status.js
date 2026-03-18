@@ -1,17 +1,21 @@
 import api from "./api";
 
-export const getStatus = async (userId) => {
+export const getStatus = async () => {
   try {
-    const response = await api.get(`/api/users/profile`, { id: userId });
-    // console.log(response.data)
-    if(response?.data?.status === 'success') return 'Connected'
-    else if(response?.data?.data === 'Invalid token') return 'Expired'
-    else return 'Disconnected'
-  } catch (error) {
-    if(error?.response?.data?.data?.includes('Invalid token')) {
-      return 'Expired';
+    const response = await api.get(`/api/users/profile`);
+
+    if (response?.data?.status === "success") {
+      return "Connected";
     }
-    // console.log(error);
-    return 'Disconnected';
+
+    return "Disconnected";
+  } catch (error) {
+    const message = error?.response?.data?.message;
+
+    if (message?.includes("Invalid") || error?.response?.status === 403) {
+      return "Expired";
+    }
+
+    return "Disconnected";
   }
 };
