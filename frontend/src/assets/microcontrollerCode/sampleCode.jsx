@@ -5,11 +5,10 @@ export const esp_SampleCode =`#include "WiFiSetup.h"
 #include <DHT_U.h>
 
 // Define project-specific details
-const int userId = 1;                // Replace with actual user ID
 String projectName = "ProjectName";  // Replace with actual project name
 String sensorName = "SensorName";    // Replace with actual sensor name
 
-// YOUR SENSOR AND VARIABLE DECLARATIONS HERE
+int sensorData = 0; // Example sensor value
 
 void setup() {
     Serial.begin(115200);
@@ -21,27 +20,28 @@ void setup() {
 
 void loop() {
     // YOUR SENSOR DATA READING CODE HERE
+    sensorData = random(0, 100); // Example data
 
     // Send sensor data to the cloud
-    sendSensorData(projectName, sensorName, userId, sensorData);
+    sendSensorData(projectName, sensorName, sensorData);
 
     // Get latest sensor data from the cloud
-    getLatestSensorData(projectName, sensorName, userId);
+    int value = getLatestSensorData(projectName, sensorName);
+
+    Serial.print("Received: ");
+    Serial.println(value);
 
     delay(5000); // Set the delay as per your requirement
 }
-`
+;`
 
 export const python_Samplecode = `import time
 from WiFiSetup import connect_to_wifi
 from SensorData import send_sensor_data, get_latest_sensor_data
 
 # Define project-specific details
-user_id = 1  # Replace with actual user ID
 project_name = "ProjectName"  # Replace with actual project name
-sensor_name = "SensorName"  # Replace with actual sensor name
-
-# YOUR SENSOR AND VARIABLE DECLARATIONS HERE
+sensor_name = "SensorName"    # Replace with actual sensor name
 
 def setup():
     print("Initializing...")
@@ -53,17 +53,19 @@ def setup():
 def loop():
     while True:
         # YOUR SENSOR DATA READING CODE HERE
-        
+        sensor_data = 1  # Example value
+
         # Send sensor data to the cloud
-        send_sensor_data(project_name, sensor_name, user_id, sensor_data)
+        send_sensor_data(project_name, sensor_name, sensor_data)
 
         # Get latest sensor data from the cloud
-        get_latest_sensor_data(project_name, sensor_name, user_id)
+        value = get_latest_sensor_data(project_name, sensor_name)
 
-        time.sleep(5)  # Set the delay as per your requirement
+        print("Received:", value)
+
+        time.sleep(5)
 
 if __name__ == "__main__":
     setup()
     loop()
-`
-    
+;`
