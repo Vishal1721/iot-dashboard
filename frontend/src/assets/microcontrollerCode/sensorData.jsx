@@ -1,104 +1,90 @@
-export const esp32_SensorData = `#ifndef SENSOR_DATA_H
+export const esp32_SensorData =`#ifndef SENSOR_DATA_H
 #define SENSOR_DATA_H
 
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
 const char* deviceKey = "YOUR_DEVICE_SECRET";
+String BASE_URL = "https://iot-dashboard-v5ab.onrender.com";
 
-/**
- * Fetches the latest sensor data from the API
- * @param sensorName The sensor name
- * @param projectName The project name
- * @param userId The user ID
- * @return Latest sensor value (0 or 1), -1 if an error occurs
- */
-int getLatestSensorData(String projectName, String sensorName, int userId) {
+// GET LATEST SENSOR DATA
+
+int getLatestSensorData(String projectName, String sensorName) {
     if (WiFi.status() != WL_CONNECTED) {
         Serial.println("WiFi Disconnected!");
         return -1;
     }
 
-    String serverUrl = "https://iot-application-backend.onrender.com/api/projects/" + 
-                        projectName + "/sensor/" + sensorName + "/getValue";
+    WiFiClientSecure client;
+    client.setInsecure();
 
     HTTPClient http;
-    http.begin(serverUrl);
+
+    String serverUrl = BASE_URL + "/api/projects/" + 
+                       projectName + "/sensor/" + sensorName + "/getValue";
+
+    http.begin(client, serverUrl);
     http.addHeader("Content-Type", "application/json");
     http.addHeader("x-device-key", deviceKey);
 
-    StaticJsonDocument<200> requestBody;
-    requestBody["id"] = userId;
-    
-    String requestData;
-    serializeJson(requestBody, requestData);
+    int httpResponseCode = http.POST("{}");
 
-    int httpResponseCode = http.POST(requestData);
-    int sensorValue = -1; // Default to -1 if no valid response
-
-    if (httpResponseCode > 0) {
-        String response = http.getString();
-        Serial.println("Response: " + response);
-
-        DynamicJsonDocument jsonDoc(4096);
-        DeserializationError error = deserializeJson(jsonDoc, response);
-        
-        if (!error && jsonDoc["data"].size() > 0) {
-            int lastIndex = jsonDoc["data"].size() - 1;
-            sensorValue = jsonDoc["data"][lastIndex]["value"];
-            Serial.print("Latest Sensor Value: ");
-            Serial.println(sensorValue);
-        } else {
-            if(error) {
-                Serial.print("Deserialization Error: ");
-                Serial.println(error.c_str());
-            }
-            else Serial.println("Invalid JSON response or no sensor data.");
-        }
-    } else {
+    if (httpResponseCode <= 0) {
         Serial.print("HTTP Error: ");
         Serial.println(httpResponseCode);
+        http.end();
+        return -1;
     }
+
+    String response = http.getString();
+    Serial.println("Response: " + response);
 
     http.end();
-    return sensorValue;
+
+    DynamicJsonDocument jsonDoc(2048);
+    DeserializationError error = deserializeJson(jsonDoc, response);
+
+    if (!error && jsonDoc["data"].size() > 0) {
+     
+        int value = jsonDoc["data"][0]["value"];
+        return value;
+    }
+
+    Serial.println("Invalid JSON or no data");
+    return -1;
 }
 
-/**
- * Sends sensor state data to the API
- * @param sensorName The sensor name
- * @param projectName The project name
- * @param userId The user ID
- * @param value The value to be sent (0 or 1)
- */
-void sendSensorData(String projectName, String sensorName, int userId, int value) {
+// SEND SENSOR DATA
+
+void sendSensorData(String projectName, String sensorName, int value) {
     if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("WiFi Disconnected! Cannot send data.");
+        Serial.println("WiFi Disconnected!");
         return;
     }
-"https://iot-application-backend.onrender.com/api/projects/" + 
-                    projectId + "/sensor/" + sensorId + "/sendData";
+
+    WiFiClientSecure client;
+    client.setInsecure();
 
     HTTPClient http;
-    http.begin(serverUrl);
+
+    String serverUrl = BASE_URL + "/api/projects/" + 
+                       projectName + "/sensor/" + sensorName + "/sendValue";
+
+    http.begin(client, serverUrl);
     http.addHeader("Content-Type", "application/json");
-    http.addHeader("Authorization", authToken);
+    http.addHeader("x-device-key", deviceKey);
 
-    StaticJsonDocument<200> requestBody;
-    requestBody["id"] = userId;
-    requestBody["value"] = value;
-    
-    String requestData;
-    serializeJson(requestBody, requestData);
+    String body = "{\\"value\\":" + String(value) + "}";
 
-    int httpResponseCode = http.POST(requestData);
+    int httpResponseCode = http.POST(body);
+
+    Serial.print("Send Status: ");
+    Serial.println(httpResponseCode);
 
     if (httpResponseCode > 0) {
-        String response = http.getString();
-        Serial.println("Data Sent Successfully: " + response);
-    } else {
-        Serial.print("Error Sending Data: ");
-        Serial.println(httpResponseCode);
+        Serial.println(http.getString());
     }
 
     http.end();
@@ -108,70 +94,47 @@ void sendSensorData(String projectName, String sensorName, int userId, int value
 `;
 
 export const RaspberryPi_SensorData = `import requests
-import json
 
-# Authentication Token
 DEVICE_KEY = "YOUR_DEVICE_SECRET"
+BASE_URL = "https://iot-dashboard-v5ab.onrender.com"
 
-# API Base URL
-BASE_URL = "https://iot-application-backend.onrender.com/api/projects"
-
-def get_latest_sensor_data(project_name, sensor_name, user_id):
-    """
-    Fetches the latest sensor data from the API.
-
-    :param project_name: The project name
-    :param sensor_name: The sensor name
-    :param user_id: The user ID
-    :return: Latest sensor value (0 or 1), -1 if an error occurs
-    """
-    url = f"{BASE_URL}/{project_name}/sensor/{sensor_name}/getValue"
-    headers = {
+HEADERS = {
     "Content-Type": "application/json",
     "x-device-key": DEVICE_KEY
 }
-    
-    payload = {"id": user_id}
+
+# GET LATEST SENSOR DATA
+def get_latest_sensor_data(project_name, sensor_name):
+    url = f"{BASE_URL}/api/projects/{project_name}/sensor/{sensor_name}/getValue"
 
     try:
-        response = requests.post(url, json=payload, headers=headers)
-        response.raise_for_status()  # Raise an error for bad HTTP status codes
+        response = requests.post(url, headers=HEADERS, json={})
         data = response.json()
 
+        print("Response:", data)
+
         if "data" in data and len(data["data"]) > 0:
-            latest_value = data["data"][-1]["value"]
-            print(f"Latest Sensor Value: {latest_value}")
-            return latest_value
-        else:
-            print("Invalid JSON response or no sensor data.")
-            return -1
-    except requests.exceptions.RequestException as e:
-        print(f"HTTP Request Error: {e}")
+            return data["data"][0]["value"]
+
         return -1
 
-def send_sensor_data(project_name, sensor_name, user_id, value):
-    """
-    Sends sensor state data to the API.
+    except Exception as e:
+        print("Error:", e)
+        return -1
 
-    :param project_name: The project name
-    :param sensor_name: The sensor name
-    :param user_id: The user ID
-    :param value: The value to be sent (0 or 1)
-    """
-    url = f"{BASE_URL}/{project_name}/sensor/{sensor_name}/sendValue"
-    headers = {
-    "Content-Type": "application/json",
-    "x-device-key": DEVICE_KEY
-    }
-    payload = {
-        "id": user_id,
-        "value": value
-    }
+# SEND SENSOR DATA
+def send_sensor_data(project_name, sensor_name, value):
+    url = f"{BASE_URL}/api/projects/{project_name}/sensor/{sensor_name}/sendValue"
 
     try:
-        response = requests.post(url, json=payload, headers=headers)
-        response.raise_for_status()
-        print(f"Data Sent Successfully: {response.json()}")
-    except requests.exceptions.RequestException as e:
-        print(f"Error Sending Data: {e}")
+        response = requests.post(
+            url,
+            headers=HEADERS,
+            json={"value": value}
+        )
+
+        print("Send Status:", response.status_code)
+
+    except Exception as e:
+        print("Error:", e)
 `;
