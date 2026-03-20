@@ -9,7 +9,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
 import { Button } from "../ui/button1";
-import { Trash2 } from "lucide-react";
+import { Trash2, Download, Search, ChevronUp, ChevronDown } from "lucide-react";
 
 const TableCard = ({ sensorData, sensors, handleDelete }) => {
   const { user } = useAuth();
@@ -27,7 +27,7 @@ const TableCard = ({ sensorData, sensors, handleDelete }) => {
       isRowHeader: true,
       allowsSorting: true,
     },
-    { key: "sensorType", label: "Sensor Type", allowsSorting: true },
+    { key: "sensorType", label: "Type", allowsSorting: true },
     { key: "value", label: "Value" },
     { key: "timestamp", label: "Timestamp", allowsSorting: true },
     { key: "status", label: "Status", allowsSorting: true },
@@ -36,13 +36,11 @@ const TableCard = ({ sensorData, sensors, handleDelete }) => {
 
   useEffect(() => {
     const formattedData = sensorData.flat().map((dataPoint) => {
-      const sensor = sensors.find((sensor) => sensor.id === dataPoint.sensorId);
-
+      const sensor = sensors.find((s) => s.id === dataPoint.sensorId);
       const formattedTimestamp = formatDate(dataPoint.timestamp);
       const isOnline =
         formattedTimestamp.includes("minute") ||
         formattedTimestamp.includes("Just now");
-
       return {
         id: dataPoint.id || `${dataPoint.sensorId}-${dataPoint.timestamp}`,
         sensorName: sensor ? sensor.name : "Unknown",
@@ -58,7 +56,6 @@ const TableCard = ({ sensorData, sensors, handleDelete }) => {
     handleSort("timestamp");
   }, [sensorData, sensors]);
 
-  // Sorting function
   const handleSort = (column) => {
     if (sortColumn === column) {
       setSortDirection(
@@ -86,6 +83,7 @@ const TableCard = ({ sensorData, sensors, handleDelete }) => {
     ),
   );
 
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
   const paginatedData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
@@ -99,139 +97,300 @@ const TableCard = ({ sensorData, sensors, handleDelete }) => {
       bookType: "xlsx",
       type: "array",
     });
-    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(data, "sensor_data.xlsx");
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(blob, "sensor_data.xlsx");
   };
 
-  const ItemDelete = async (item) => {
-    handleDelete(item);
-  };
+  if (!sensorData?.length || !sensors?.length) return null;
 
   return (
-    <div className="w-full overflow-auto lg:px-16 pb-6">
-      {sensorData?.length > 0 && sensors?.length > 0 && (
-        <Card className="bg-white rounded-xl shadow-lg w-full px-4 border border-gray-200">
-          <Card.Header className="flex items-center justify-between -mb-8 md:-mb-5">
-            <Card.Title className="text-base sm:text-xl font-bold text-gray-800">
-              Sensor Data Table
-            </Card.Title>
-          </Card.Header>
-          <div className="py-4 flex justify-between items-center gap-2 sm:gap-5">
-            <Input
-              placeholder="Search anything..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full border border-gray-300 bg-gray-50 text-gray-800 rounded-xl pl-5 h-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            />
-            <Button
-              onClick={handleDownload}
-              className="bg-blue-600 text-white hover:bg-blue-700 font-semibold px-4 py-2 rounded-lg transition-colors"
-            >
-              Download as Excel
-            </Button>
-          </div>
-          <Table
-            allowResize
-            aria-label="Live Sensor Data"
-            className="rounded-lg shadow-sm w-full min-w-[600px] border border-gray-200"
-          >
-            <Table.Header className="bg-gradient-to-r from-blue-600 to-blue-800 w-full">
-              {columns?.map((column) => (
-                <Table.Column
-                  key={column?.key}
-                  isResizable
-                  isRowHeader={column?.isRowHeader}
-                  className={`text-white font-medium ${column?.allowsSorting ? "cursor-pointer" : ""}`}
-                >
-                  <div
-                    onClick={() =>
-                      column?.allowsSorting && handleSort(column?.key)
-                    }
-                    className={`cursor-pointer flex justify-between items-center px-2 py-2 ${column?.allowsSorting ? "hover:opacity-80" : ""}`}
-                  >
-                    {column?.label}
-                    {sortColumn === column?.key && (
-                      <span className="ml-1 text-white">
-                        {sortDirection === "ascending" ? "▲" : "▼"}
-                      </span>
-                    )}
-                  </div>
-                </Table.Column>
-              ))}
-            </Table.Header>
-            <Table.Body items={paginatedData}>
-              {(item) => (
-                <Table.Row
-                  key={item?.id}
-                  className="hover:bg-gray-100 border-b border-gray-200 even:bg-gray-50"
-                >
-                  <Table.Cell className="text-gray-700">
-                    {item?.sensorName}
-                  </Table.Cell>
-                  <Table.Cell className="text-gray-700">
-                    {item?.sensorType}
-                  </Table.Cell>
-                  <Table.Cell className="text-gray-700">
-                    {item?.value}
-                  </Table.Cell>
-                  <Table.Cell className="text-gray-700">
-                    {item?.timestamp}
-                  </Table.Cell>
-                  <Table.Cell>
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                        item?.status === "Online"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {item?.status}
-                    </span>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Trash2
-                      className="cursor-pointer text-red-500 hover:text-red-700 transition-all w-5 h-5"
-                      onClick={() => ItemDelete(item)}
-                    />
-                  </Table.Cell>
-                </Table.Row>
-              )}
-            </Table.Body>
-          </Table>
-          <div className="p-4 bg-gray-50 rounded-b-lg border-t border-gray-200">
-            <div className="flex justify-between items-center">
+    <>
+      <style>{`
+        .table-outer {
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .table-outer:hover {
+          border-color: rgba(255,255,255,0.13) !important;
+        }
+        .th-sort:hover {
+          background: rgba(255,255,255,0.05);
+        }
+        .tr-row {
+          transition: background 0.15s ease;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .tr-row:hover {
+          background: rgba(79,110,247,0.07) !important;
+        }
+        .tr-row:nth-child(even) {
+          background: rgba(255,255,255,0.02);
+        }
+        .delete-btn {
+          transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+          border-radius: 6px;
+          padding: 4px;
+        }
+        .delete-btn:hover {
+          color: #f87171 !important;
+          background: rgba(248,113,113,0.14);
+          transform: scale(1.18);
+        }
+        .search-input:focus {
+          border-color: rgba(79,110,247,0.55) !important;
+          box-shadow: 0 0 0 3px rgba(79,110,247,0.13) !important;
+          outline: none !important;
+        }
+        .download-btn {
+          background: linear-gradient(135deg, #4f6ef7 0%, #6c8fff 100%);
+          box-shadow: 0 4px 14px rgba(79,110,247,0.3);
+          transition: all 0.2s ease;
+        }
+        .download-btn:hover {
+          box-shadow: 0 6px 20px rgba(79,110,247,0.5);
+          transform: translateY(-1px);
+        }
+        .page-btn {
+          transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+        .page-btn:hover:not(:disabled) {
+          background: rgba(79,110,247,0.15);
+          border-color: rgba(79,110,247,0.4);
+          color: #8aabff;
+        }
+        .page-btn:disabled {
+          opacity: 0.35;
+          cursor: not-allowed;
+        }
+      `}</style>
+
+      <div className="w-full overflow-auto lg:px-16 pb-6">
+        <div
+          className="table-outer rounded-xl overflow-hidden"
+          style={{
+            background: "linear-gradient(160deg, #1e2235 0%, #181b28 100%)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            boxShadow: "0 8px 28px rgba(0,0,0,0.35)",
+          }}
+        >
+          {/* Blue accent bar */}
+          <div
+            style={{
+              height: "2px",
+              background:
+                "linear-gradient(90deg, #4f6ef7 0%, rgba(79,110,247,0) 100%)",
+            }}
+          />
+
+          {/* Header row */}
+          <div className="px-5 py-4 flex items-center justify-between border-b border-white/5">
+            <div>
+              <h2 className="text-white font-bold text-base">
+                Sensor Data Table
+              </h2>
+              <p className="text-gray-500 text-xs mt-0.5">
+                {filteredData.length} record
+                {filteredData.length !== 1 ? "s" : ""}
+                {searchTerm ? ` matching "${searchTerm}"` : " total"}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* Search */}
+              <div className="relative">
+                <Search
+                  size={13}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+                />
+                <input
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="search-input w-48 text-sm text-white placeholder:text-gray-600 rounded-lg pl-8 pr-3 py-2"
+                  style={{
+                    background: "rgba(0,0,0,0.25)",
+                    border: "1px solid rgba(255,255,255,0.09)",
+                  }}
+                />
+              </div>
+
+              {/* Download */}
               <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                onClick={handleDownload}
+                className="download-btn flex items-center gap-1.5 text-white font-semibold px-4 py-2 rounded-lg text-sm"
               >
-                Previous
-              </button>
-              <span className="text-gray-600">
-                Page {currentPage} of{" "}
-                {Math.ceil(filteredData.length / itemsPerPage)}
-              </span>
-              <button
-                onClick={() =>
-                  setCurrentPage((prev) =>
-                    Math.min(
-                      prev + 1,
-                      Math.ceil(filteredData.length / itemsPerPage),
-                    ),
-                  )
-                }
-                disabled={
-                  currentPage === Math.ceil(filteredData.length / itemsPerPage)
-                }
-                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Next
+                <Download size={13} />
+                Export Excel
               </button>
             </div>
           </div>
-        </Card>
-      )}
-    </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
+              {/* Table head */}
+              <thead>
+                <tr
+                  style={{
+                    background: "rgba(0,0,0,0.2)",
+                    borderBottom: "1px solid rgba(255,255,255,0.07)",
+                  }}
+                >
+                  {columns.map((col) => (
+                    <th
+                      key={col.key}
+                      className={`text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400 select-none ${col.allowsSorting ? "th-sort cursor-pointer" : ""}`}
+                      onClick={() => col.allowsSorting && handleSort(col.key)}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        {col.label}
+                        {col.allowsSorting && (
+                          <span
+                            className="flex flex-col"
+                            style={{ lineHeight: 0 }}
+                          >
+                            <ChevronUp
+                              size={10}
+                              style={{
+                                color:
+                                  sortColumn === col.key &&
+                                  sortDirection === "ascending"
+                                    ? "#8aabff"
+                                    : "rgba(255,255,255,0.2)",
+                              }}
+                            />
+                            <ChevronDown
+                              size={10}
+                              style={{
+                                color:
+                                  sortColumn === col.key &&
+                                  sortDirection === "descending"
+                                    ? "#8aabff"
+                                    : "rgba(255,255,255,0.2)",
+                              }}
+                            />
+                          </span>
+                        )}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+
+              {/* Table body */}
+              <tbody>
+                {paginatedData.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={columns.length}
+                      className="text-center py-14 text-gray-600 text-sm"
+                    >
+                      No records found.
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedData.map((item) => (
+                    <tr key={item.id} className="tr-row">
+                      <td className="px-4 py-3 text-white font-medium">
+                        {item.sensorName}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className="text-xs font-mono font-semibold px-2 py-0.5 rounded-md"
+                          style={{
+                            background: "rgba(79,110,247,0.13)",
+                            border: "1px solid rgba(79,110,247,0.2)",
+                            color: "#8aabff",
+                          }}
+                        >
+                          {item.sensorType}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-300 font-mono">
+                        {item.value}
+                      </td>
+                      <td className="px-4 py-3 text-gray-400 text-xs">
+                        {item.timestamp}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full"
+                          style={
+                            item.status === "Online"
+                              ? {
+                                  background: "rgba(34,197,94,0.13)",
+                                  border: "1px solid rgba(34,197,94,0.25)",
+                                  color: "#4ade80",
+                                }
+                              : {
+                                  background: "rgba(255,255,255,0.05)",
+                                  border: "1px solid rgba(255,255,255,0.1)",
+                                  color: "#6b7280",
+                                }
+                          }
+                        >
+                          <span
+                            className="w-1.5 h-1.5 rounded-full"
+                            style={{
+                              background:
+                                item.status === "Online"
+                                  ? "#4ade80"
+                                  : "#4b5563",
+                            }}
+                          />
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => handleDelete(item)}
+                          className="delete-btn text-gray-600 cursor-pointer"
+                          title="Delete record"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination footer */}
+          <div
+            className="px-5 py-4 flex items-center justify-between"
+            style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+              className="page-btn px-4 py-1.5 text-sm text-gray-400 rounded-lg"
+              style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              Previous
+            </button>
+
+            <span className="text-xs text-gray-500">
+              Page{" "}
+              <span className="text-white font-semibold">{currentPage}</span> of{" "}
+              <span className="text-white font-semibold">{totalPages}</span>
+            </span>
+
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="page-btn px-4 py-1.5 text-sm text-gray-400 rounded-lg"
+              style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 
