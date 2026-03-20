@@ -8,20 +8,41 @@ import {
   CardDescription,
 } from "@/components/ui/card1";
 import { formatDate } from "@/utils/time-functions";
+import { Zap } from "lucide-react";
 
 const Switch = ({ checked, onChange }) => {
   return (
-    <label className="relative flex items-center cursor-pointer">
+    <label className="relative flex items-center cursor-pointer group">
       <input
         type="checkbox"
         checked={checked}
         onChange={onChange}
         className="sr-only peer"
       />
-      <div className="w-14 h-7 bg-gray-300 rounded-full peer-checked:bg-green-500 transition duration-300 relative shadow-inner">
+      {/* Track */}
+      <div
+        className="w-16 h-8 rounded-full relative transition-all duration-300"
+        style={{
+          background: checked
+            ? "linear-gradient(135deg, #22c55e, #16a34a)"
+            : "rgba(255,255,255,0.08)",
+          border: checked
+            ? "1px solid rgba(34,197,94,0.4)"
+            : "1px solid rgba(255,255,255,0.1)",
+          boxShadow: checked ? "0 0 14px rgba(34,197,94,0.35)" : "none",
+        }}
+      >
+        {/* Thumb */}
         <div
-          className={`absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow-md transform transition-all duration-300 ${checked ? "translate-x-7" : ""}`}
-        ></div>
+          className="absolute top-1 w-6 h-6 rounded-full shadow-lg transition-all duration-300"
+          style={{
+            left: checked ? "calc(100% - 28px)" : "4px",
+            background: checked ? "#fff" : "rgba(255,255,255,0.5)",
+            boxShadow: checked
+              ? "0 2px 8px rgba(0,0,0,0.3)"
+              : "0 1px 4px rgba(0,0,0,0.2)",
+          }}
+        />
       </div>
     </label>
   );
@@ -30,12 +51,10 @@ const Switch = ({ checked, onChange }) => {
 const SwitchCard = ({ sensor, sensorData, onSwitchChange }) => {
   const lastData =
     sensorData.length > 0 ? sensorData[sensorData.length - 1] : null;
-  const [isChecked, setIsChecked] = useState(
-    lastData?.value === 1 ? true : false,
-  );
+  const [isChecked, setIsChecked] = useState(lastData?.value === 1);
 
   useEffect(() => {
-    setIsChecked(lastData?.value === 1 ? true : false);
+    setIsChecked(lastData?.value === 1);
   }, [lastData]);
 
   const handleSwitchChange = async () => {
@@ -49,41 +68,105 @@ const SwitchCard = ({ sensor, sensorData, onSwitchChange }) => {
   };
 
   return (
-    <Card className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow w-80 md:w-64 lg:w-72 max-w-full mb-6 border border-gray-200">
-      <CardHeader className="flex items-center rounded-t-xl bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4">
-        <CardTitle className="text-xl font-bold text-center">
-          {sensor.name}
-        </CardTitle>
-        <CardDescription className="text-sm font-medium text-center text-gray-100">
-          {sensor.type}
-        </CardDescription>
-      </CardHeader>
+    <>
+      <style>{`
+        .switch-card {
+          transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+        }
+        .switch-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.12);
+          border-color: rgba(255,255,255,0.16) !important;
+        }
+        .switch-accent {
+          height: 2px;
+          border-radius: 12px 12px 0 0;
+        }
+        .status-badge-on {
+          background: rgba(34,197,94,0.15);
+          border: 1px solid rgba(34,197,94,0.3);
+          color: #4ade80;
+          box-shadow: 0 0 12px rgba(34,197,94,0.2);
+        }
+        .status-badge-off {
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: #6b7280;
+        }
+      `}</style>
 
-      <CardContent className="flex flex-col items-center p-6">
-        <span
-          className={`px-6 py-3 my-3 text-sm font-semibold rounded-full tracking-wider cursor-pointer transition-all ${
-            isChecked
-              ? "bg-green-500 text-white shadow-md hover:bg-green-600"
-              : "bg-gray-400 text-white shadow-md hover:bg-gray-500"
-          }`}
-        >
-          {isChecked ? "ON" : "OFF"}
-        </span>
+      <div
+        className="switch-card rounded-xl overflow-hidden w-64 flex flex-col"
+        style={{
+          background: "linear-gradient(160deg, #1e2235 0%, #181b28 100%)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+        }}
+      >
+        {/* Accent bar — green when ON, default blue when OFF */}
+        <div
+          className="switch-accent"
+          style={{
+            background: isChecked
+              ? "linear-gradient(90deg, #22c55e 0%, rgba(34,197,94,0) 100%)"
+              : "linear-gradient(90deg, #4f6ef7 0%, rgba(79,110,247,0) 100%)",
+            transition: "background 0.3s ease",
+          }}
+        />
 
-        <div className="text-center mt-4 space-y-1">
-          <p className="text-gray-600 text-sm font-medium">Last modified</p>
-          <p className="text-gray-800 font-semibold text-sm">
-            {sensorData.length > 0
-              ? formatDate(sensorData[sensorData.length - 1].timestamp)
-              : "N/A"}
-          </p>
+        {/* Header */}
+        <div className="px-5 pt-4 pb-3 flex items-center justify-between border-b border-white/5">
+          <div>
+            <p className="text-white font-semibold text-sm leading-tight">
+              {sensor.name}
+            </p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider mt-0.5">
+              {sensor.type}
+            </p>
+          </div>
+          <Zap
+            size={14}
+            className="transition-colors duration-300"
+            style={{ color: isChecked ? "#4ade80" : "#4b5563" }}
+          />
         </div>
-      </CardContent>
 
-      <CardFooter className="px-4 pt-1 pb-6 flex justify-center border-t border-gray-100">
-        <Switch checked={isChecked} onChange={handleSwitchChange} />
-      </CardFooter>
-    </Card>
+        {/* Body */}
+        <div className="flex flex-col items-center px-5 py-5 gap-4">
+          {/* Status badge */}
+          <span
+            className={`px-6 py-2 text-sm font-bold rounded-full tracking-widest transition-all duration-300 ${
+              isChecked ? "status-badge-on" : "status-badge-off"
+            }`}
+          >
+            {isChecked ? "ON" : "OFF"}
+          </span>
+
+          {/* Toggle switch */}
+          <Switch checked={isChecked} onChange={handleSwitchChange} />
+
+          {/* Last modified */}
+          <div
+            className="w-full rounded-lg px-4 py-3"
+            style={{
+              background: "rgba(0,0,0,0.22)",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500 uppercase tracking-wider">
+                Last updated
+              </span>
+              <span className="text-xs font-medium text-gray-300">
+                {sensorData.length > 0
+                  ? formatDate(sensorData[sensorData.length - 1].timestamp)
+                  : "N/A"}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 
