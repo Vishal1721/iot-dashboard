@@ -44,6 +44,7 @@ import { BarChartCard } from "@/components/chart/BarChartCard";
 import { LineChartCard } from "@/components/chart/LineChartCard";
 import TableCard from "@/components/table/TableCard";
 import { toast } from "sonner";
+import { Settings2, Radio, ChevronDown } from "lucide-react";
 
 const LiveTracking = () => {
   const { user } = useAuth();
@@ -54,7 +55,7 @@ const LiveTracking = () => {
   const [sensors, setSensors] = useState([]);
   const [sensorData, setSensorData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false); // ✅ ADDED
+  const [showForm, setShowForm] = useState(false);
 
   // ==============================
   // 1️⃣ Fetch Projects
@@ -66,13 +67,11 @@ const LiveTracking = () => {
       try {
         const response = await getProjectsByUserId(user._id);
         const projectsData = response?.projects || [];
-
         setProjects(projectsData);
 
         if (projectsData.length > 0) {
           const found =
             projectsData.find((p) => p._id === projectId) || projectsData[0];
-
           setSelectedProject(found);
         }
       } catch (error) {
@@ -84,13 +83,11 @@ const LiveTracking = () => {
 
     fetchProjects();
   }, [user?._id, projectId]);
+
   const handleDelete = async (item) => {
     try {
       await deleteSensorData(selectedProject._id, item.sensorId, item.id);
-
       toast.success("Deleted successfully");
-
-      // Optional: remove from UI immediately (optimistic update)
       setSensorData((prev) =>
         prev.map((arr) => arr.filter((data) => data.id !== item.id)),
       );
@@ -98,6 +95,7 @@ const LiveTracking = () => {
       toast.error("Failed to delete sensor data");
     }
   };
+
   // ==============================
   // 2️⃣ Fetch Sensors
   // ==============================
@@ -107,7 +105,6 @@ const LiveTracking = () => {
     const fetchSensors = async () => {
       try {
         const response = await getSensorByProjectId(selectedProject._id);
-
         const normalizedSensors = (
           response?.sensors ||
           response?.data ||
@@ -139,11 +136,9 @@ const LiveTracking = () => {
           setSensorData([]);
           return;
         }
-
         const promises = sensors.map((sensor) =>
           receiveSensorData(selectedProject._id, sensor.id),
         );
-
         const responses = await Promise.all(promises);
         setSensorData(responses.map((res) => res?.data || []));
       } catch (error) {
@@ -157,45 +152,36 @@ const LiveTracking = () => {
   // ==============================
   // Socket Updates
   // ==============================
- useEffect(() => {
-   if (!selectedProject?._id) return;
+  useEffect(() => {
+    if (!selectedProject?._id) return;
 
-   console.log("Joining project room:", selectedProject._id);
+    socket.emit("joinProject", selectedProject._id);
 
-   socket.emit("joinProject", selectedProject._id);
+    const handleSensorUpdate = (data) => {
+      setSensorData((prev) => {
+        const updated = [...prev];
+        const sensorIndex = sensors.findIndex((s) => s._id === data.sensorId);
+        if (sensorIndex !== -1) {
+          updated[sensorIndex] = [
+            ...(updated[sensorIndex] || []),
+            {
+              id: data.id,
+              value: data.value,
+              sensorId: data.sensorId,
+              timestamp: data.timestamp,
+            },
+          ];
+        }
+        return updated;
+      });
+    };
 
-   const handleSensorUpdate = (data) => {
-     console.log("Realtime data received:", data);
+    socket.on("sensorDataUpdate", handleSensorUpdate);
+    return () => {
+      socket.off("sensorDataUpdate", handleSensorUpdate);
+    };
+  }, [selectedProject?._id, sensors]);
 
-     setSensorData((prev) => {
-       const updated = [...prev];
-
-       const sensorIndex = sensors.findIndex(
-         (s) => s._id === data.sensorId, // ✅ FIX HERE
-       );
-
-       if (sensorIndex !== -1) {
-         updated[sensorIndex] = [
-           ...(updated[sensorIndex] || []),
-           {
-             id: data.id,
-             value: data.value,
-             sensorId: data.sensorId,
-             timestamp: data.timestamp,
-           },
-         ];
-       }
-
-       return updated;
-     });
-   };
-
-   socket.on("sensorDataUpdate", handleSensorUpdate);
-
-   return () => {
-     socket.off("sensorDataUpdate", handleSensorUpdate);
-   };
- }, [selectedProject?._id, sensors]);
   if (loading) {
     return (
       <div className="h-screen flex justify-center items-center">
@@ -203,14 +189,14 @@ const LiveTracking = () => {
       </div>
     );
   }
+
   // Separate sensors by type
   const outputSensors = sensors.filter(
     (sensor) => sensor.type?.toUpperCase() === "OUTPUT",
   );
-
- const inputSensors = sensors.filter(
-   (sensor) => sensor.type?.toUpperCase() === "INPUT",
- );
+  const inputSensors = sensors.filter(
+    (sensor) => sensor.type?.toUpperCase() === "INPUT",
+  );
 
   // Match sensorData correctly by index
   const outputSensorData = outputSensors.map((sensor) => {
@@ -223,125 +209,253 @@ const LiveTracking = () => {
       sensor.type === "INPUT" ? sensorData[index] : null,
     )
     .filter(Boolean);
+
   return (
-    <div className="p-6 w-full">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-xl font-bold">Track Individual Project</h1>
+    <>
+      <style>{`
+        .live-dot {
+          width: 8px;
+          height: 8px;
+          background: #4ade80;
+          border-radius: 50%;
+          box-shadow: 0 0 0 0 rgba(74,222,128,0.4);
+          animation: pulse-live 2s infinite;
+        }
+        @keyframes pulse-live {
+          0%   { box-shadow: 0 0 0 0 rgba(74,222,128,0.5); }
+          70%  { box-shadow: 0 0 0 7px rgba(74,222,128,0); }
+          100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); }
+        }
+        .manage-btn {
+          background: linear-gradient(135deg, #4f6ef7 0%, #6c8fff 100%);
+          box-shadow: 0 4px 14px rgba(79,110,247,0.3);
+          transition: all 0.2s ease;
+        }
+        .manage-btn:hover {
+          box-shadow: 0 6px 22px rgba(79,110,247,0.5);
+          transform: translateY(-1px);
+        }
+        .project-info-card {
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .project-info-card:hover {
+          border-color: rgba(255,255,255,0.15) !important;
+          box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+        }
+        .section-card {
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .section-card:hover {
+          border-color: rgba(255,255,255,0.13) !important;
+        }
+        .select-trigger-custom {
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .select-trigger-custom:focus,
+        .select-trigger-custom:hover {
+          border-color: rgba(79,110,247,0.5) !important;
+          box-shadow: 0 0 0 3px rgba(79,110,247,0.12);
+        }
+      `}</style>
 
-        <div className="flex items-center gap-3">
-          <Select
-            value={selectedProject?._id || ""}
-            onValueChange={(value) =>
-              setSelectedProject(projects.find((p) => p._id === value))
-            }
-          >
-            <SelectTrigger className="w-[200px] bg-white">
-              <SelectValue placeholder="Select Project" />
-            </SelectTrigger>
-
-            <SelectContent>
-              {projects.map((project) => (
-                <SelectItem key={project._id} value={project._id}>
-                  {project.projectName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* ✅ ADDED Manage Sensors Button */}
-          <Dialog open={showForm} onOpenChange={setShowForm}>
-            <DialogTrigger asChild>
-              <Button className="bg-foreground text-white">
-                Manage Sensors
-              </Button>
-            </DialogTrigger>
-
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Manage Sensors</DialogTitle>
-                <DialogDescription>
-                  Create, update or delete sensors.
-                </DialogDescription>
-              </DialogHeader>
-
-              <ManageSensors
-                projectId={selectedProject?._id}
-                userId={user?._id}
-                sensors={sensors}
-                changeSensors={setSensors}
-                handleOpen={() => setShowForm(false)}
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
-
-      {selectedProject && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>{selectedProject.projectName}</CardTitle>
-            <CardDescription>{selectedProject.description}</CardDescription>
-          </CardHeader>
-        </Card>
-      )}
-
-      <GaugeCard sensors={outputSensors} sensorData={outputSensorData} />
-      {/* INPUT SENSORS */}
-      {inputSensors.length > 0 && (
-        <div className="lg:px-16 mb-6">
-          <Card className="h-auto bg-quaternary rounded-xl shadow-xl">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold">
-                Input Sensors
-              </CardTitle>
-              <CardDescription>
-                You can control the input device here.
-              </CardDescription>
-            </CardHeader>
-
-            <div className="flex flex-wrap justify-center gap-4 p-6">
-              {inputSensors.map((sensor, index) => (
-                <SwitchCard
-                  key={sensor.id}
-                  sensor={sensor}
-                  sensorData={inputSensorData[index] || []}
-                  onSwitchChange={async (sensorId, value) => {
-                    await sendSensorData(selectedProject._id, sensorId, {
-                      value,
-                    });
-
-                    const formatted = {
-                      id: Date.now(),
-                      value,
-                      sensorId,
-                      timestamp: new Date().toISOString(),
-                    };
-
-                    setSensorData((prev) =>
-                      prev.map((arr, index) => {
-                        const sensor = sensors[index];
-                        if (sensor?.id === sensorId) {
-                          return [...arr, formatted];
-                        }
-                        return arr;
-                      }),
-                    );
-                  }}
-                />
-              ))}
+      <div className="p-6 w-full">
+        {/* ── Top Bar ── */}
+        <div className="flex justify-between items-center mb-7">
+          <div className="flex items-center gap-3">
+            <div className="live-dot" />
+            <div>
+              <h1 className="text-xl font-bold text-white leading-tight">
+                Track Individual Project
+              </h1>
+              <p className="text-gray-500 text-xs mt-0.5">
+                Real-time sensor monitoring
+              </p>
             </div>
-          </Card>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Project Selector */}
+            <Select
+              value={selectedProject?._id || ""}
+              onValueChange={(value) =>
+                setSelectedProject(projects.find((p) => p._id === value))
+              }
+            >
+              <SelectTrigger
+                className="select-trigger-custom w-[200px] border text-white text-sm rounded-lg px-3 py-2"
+                style={{
+                  background:
+                    "linear-gradient(160deg, #1e2235 0%, #181b28 100%)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                }}
+              >
+                <SelectValue placeholder="Select Project" />
+              </SelectTrigger>
+
+              <SelectContent
+                style={{
+                  background: "#181b28",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                }}
+              >
+                {projects.map((project) => (
+                  <SelectItem
+                    key={project._id}
+                    value={project._id}
+                    className="text-white focus:bg-white/10 focus:text-white text-sm"
+                  >
+                    {project.projectName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Manage Sensors */}
+            <Dialog open={showForm} onOpenChange={setShowForm}>
+              <DialogTrigger asChild>
+                <button className="manage-btn flex items-center gap-2 text-white font-semibold px-4 py-2 rounded-lg text-sm">
+                  <Settings2 size={14} />
+                  Manage Sensors
+                </button>
+              </DialogTrigger>
+
+              <DialogContent
+                className="max-w-2xl text-white"
+                style={{
+                  background: "#181b28",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  boxShadow: "0 30px 70px rgba(0,0,0,0.65)",
+                }}
+              >
+                <DialogHeader>
+                  <DialogTitle className="text-white text-lg">
+                    Manage Sensors
+                  </DialogTitle>
+                  <DialogDescription className="text-gray-500">
+                    Create, update or delete sensors for this project.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <ManageSensors
+                  projectId={selectedProject?._id}
+                  userId={user?._id}
+                  sensors={sensors}
+                  changeSensors={setSensors}
+                  handleOpen={() => setShowForm(false)}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
-      )}
-      <BarChartCard sensors={sensors} sensorData={sensorData} />
-      <LineChartCard sensors={sensors} sensorData={sensorData} />
-      <TableCard
-        sensors={sensors}
-        sensorData={sensorData}
-        handleDelete={handleDelete}
-      />
-    </div>
+
+        {/* ── Project Info Card ── */}
+        {selectedProject && (
+          <div
+            className="project-info-card mb-6 rounded-xl overflow-hidden"
+            style={{
+              background: "linear-gradient(160deg, #1e2235 0%, #181b28 100%)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              boxShadow: "0 8px 28px rgba(0,0,0,0.35)",
+            }}
+          >
+            {/* Blue accent bar */}
+            <div
+              style={{
+                height: "2px",
+                background:
+                  "linear-gradient(90deg, #4f6ef7 0%, rgba(79,110,247,0) 100%)",
+              }}
+            />
+            <div className="px-6 py-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-white font-semibold text-base">
+                  {selectedProject.projectName}
+                </h2>
+                <p className="text-gray-500 text-sm mt-0.5">
+                  {selectedProject.description}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Radio size={12} className="text-green-400" />
+                <span className="text-xs text-green-400 font-medium">Live</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Output / Gauge Section ── */}
+        <GaugeCard sensors={outputSensors} sensorData={outputSensorData} />
+
+        {/* ── Input Sensors Section ── */}
+        {inputSensors.length > 0 && (
+          <div className="lg:px-16 mb-6">
+            <div
+              className="section-card rounded-xl overflow-hidden"
+              style={{
+                background: "linear-gradient(160deg, #1e2235 0%, #181b28 100%)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                boxShadow: "0 8px 28px rgba(0,0,0,0.3)",
+              }}
+            >
+              {/* Blue accent bar */}
+              <div
+                style={{
+                  height: "2px",
+                  background:
+                    "linear-gradient(90deg, #4f6ef7 0%, rgba(79,110,247,0) 100%)",
+                }}
+              />
+              <div className="pt-6 pb-2 text-center px-6">
+                <h2 className="text-xl font-bold text-white">Input Sensors</h2>
+                <p className="text-gray-500 text-sm mt-1">
+                  Control your connected input devices below
+                </p>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-4 p-6">
+                {inputSensors.map((sensor, index) => (
+                  <SwitchCard
+                    key={sensor.id}
+                    sensor={sensor}
+                    sensorData={inputSensorData[index] || []}
+                    onSwitchChange={async (sensorId, value) => {
+                      await sendSensorData(selectedProject._id, sensorId, {
+                        value,
+                      });
+
+                      const formatted = {
+                        id: Date.now(),
+                        value,
+                        sensorId,
+                        timestamp: new Date().toISOString(),
+                      };
+
+                      setSensorData((prev) =>
+                        prev.map((arr, i) => {
+                          const s = sensors[i];
+                          if (s?.id === sensorId) return [...arr, formatted];
+                          return arr;
+                        }),
+                      );
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Charts & Table ── */}
+        <BarChartCard sensors={sensors} sensorData={sensorData} />
+        <LineChartCard sensors={sensors} sensorData={sensorData} />
+        <TableCard
+          sensors={sensors}
+          sensorData={sensorData}
+          handleDelete={handleDelete}
+        />
+      </div>
+    </>
   );
-};;
+};
 
 export default LiveTracking;
