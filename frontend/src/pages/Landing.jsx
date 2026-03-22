@@ -1,13 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import * as THREE from "three";
 import {
   Activity,
   Wifi,
   Database,
   Monitor,
-  TrendingUp,
   Cpu,
   Radio,
   Shield,
@@ -21,7 +19,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { getProjectsByUserId } from "@/APIs/projectAPI";
 
-/* ─── fade-up helper ─── */
+/* ─── animation helpers ─── */
 const fadeUp = (delay = 0) => ({
   hidden: { opacity: 0, y: 28 },
   visible: {
@@ -158,12 +156,101 @@ const BG_ICONS = [
   { Icon: Cpu, top: "36%", right: "4%", size: 72, dur: 7, delay: 1 },
 ];
 
+/* ─── lightweight SVG dot-network (replaces Three.js canvas) ─── */
+// Pre-computed static positions so nothing is re-generated on render
+const DOTS = [
+  [12, 18],
+  [28, 72],
+  [45, 35],
+  [60, 85],
+  [75, 20],
+  [88, 60],
+  [20, 50],
+  [55, 10],
+  [35, 65],
+  [70, 45],
+  [82, 25],
+  [15, 80],
+  [50, 55],
+  [90, 80],
+  [40, 8],
+  [65, 70],
+  [25, 40],
+  [80, 10],
+  [10, 65],
+  [48, 90],
+  [72, 32],
+  [38, 78],
+  [58, 48],
+  [85, 45],
+  [22, 28],
+  [68, 18],
+  [32, 92],
+  [78, 70],
+  [42, 22],
+  [55, 38],
+];
+// Edges between dots that are "close enough" (purely decorative, precomputed)
+const EDGES = DOTS.reduce(
+  (acc, [x1, y1], i) =>
+    DOTS.slice(i + 1).reduce((a, [x2, y2], j) => {
+      const dist = Math.hypot(x2 - x1, y2 - y1);
+      if (dist < 22) a.push([i, i + 1 + j]);
+      return a;
+    }, acc),
+  [],
+);
+
+function ParticleBackground() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 100 100"
+      preserveAspectRatio="xMidYMid slice"
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ opacity: 0.4, zIndex: 0 }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* connecting lines */}
+      {EDGES.map(([a, b], i) => (
+        <line
+          key={i}
+          x1={DOTS[a][0]}
+          y1={DOTS[a][1]}
+          x2={DOTS[b][0]}
+          y2={DOTS[b][1]}
+          stroke="#38bdf8"
+          strokeWidth="0.18"
+          opacity="0.5"
+        />
+      ))}
+      {/* dots with gentle pulse */}
+      {DOTS.map(([cx, cy], i) => (
+        <circle key={i} cx={cx} cy={cy} r="0.7" fill="#67e8f9">
+          <animate
+            attributeName="opacity"
+            values="0.3;1;0.3"
+            dur={`${3 + (i % 4)}s`}
+            begin={`${-(i * 0.35)}s`}
+            repeatCount="indefinite"
+          />
+          <animate
+            attributeName="r"
+            values="0.5;0.9;0.5"
+            dur={`${3 + (i % 4)}s`}
+            begin={`${-(i * 0.35)}s`}
+            repeatCount="indefinite"
+          />
+        </circle>
+      ))}
+    </svg>
+  );
+}
+
 /* ════════════════════════════════════════════ */
 const Landing = () => {
   const navigate = useNavigate();
-  const canvasRef = useRef(null);
   const { user } = useAuth();
-
   const [stats, setStats] = useState({ projects: 0, mcus: 0, keys: 0 });
 
   useEffect(() => {
@@ -183,114 +270,6 @@ const Landing = () => {
       .catch(() => {});
   }, [user?._id]);
 
-  /* Three.js particle net */
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      alpha: true,
-      antialias: true,
-    });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(
-      60,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000,
-    );
-    camera.position.z = 80;
-
-    const N = 130;
-    const pos = new Float32Array(N * 3);
-    const vel = new Float32Array(N * 3);
-    for (let i = 0; i < N; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 200;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 120;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 60;
-      vel[i * 3] = (Math.random() - 0.5) * 0.04;
-      vel[i * 3 + 1] = (Math.random() - 0.5) * 0.04;
-    }
-    const ptGeo = new THREE.BufferGeometry();
-    ptGeo.setAttribute("position", new THREE.BufferAttribute(pos.slice(), 3));
-    scene.add(
-      new THREE.Points(
-        ptGeo,
-        new THREE.PointsMaterial({
-          color: 0x67e8f9,
-          size: 0.9,
-          transparent: true,
-          opacity: 0.8,
-        }),
-      ),
-    );
-
-    const MAX = N * N;
-    const lBuf = new Float32Array(MAX * 6);
-    const lGeo = new THREE.BufferGeometry();
-    lGeo.setAttribute("position", new THREE.BufferAttribute(lBuf, 3));
-    lGeo.setDrawRange(0, 0);
-    scene.add(
-      new THREE.LineSegments(
-        lGeo,
-        new THREE.LineBasicMaterial({
-          color: 0x38bdf8,
-          transparent: true,
-          opacity: 0.18,
-        }),
-      ),
-    );
-
-    const D = 30;
-    let id;
-    const animate = () => {
-      id = requestAnimationFrame(animate);
-      const p = ptGeo.attributes.position.array;
-      for (let i = 0; i < N; i++) {
-        p[i * 3] += vel[i * 3];
-        p[i * 3 + 1] += vel[i * 3 + 1];
-        if (p[i * 3] > 100) p[i * 3] = -100;
-        if (p[i * 3] < -100) p[i * 3] = 100;
-        if (p[i * 3 + 1] > 60) p[i * 3 + 1] = -60;
-        if (p[i * 3 + 1] < -60) p[i * 3 + 1] = 60;
-      }
-      ptGeo.attributes.position.needsUpdate = true;
-      let lIdx = 0;
-      for (let i = 0; i < N; i++)
-        for (let j = i + 1; j < N; j++) {
-          const dx = p[i * 3] - p[j * 3],
-            dy = p[i * 3 + 1] - p[j * 3 + 1];
-          if (dx * dx + dy * dy < D * D) {
-            lBuf[lIdx++] = p[i * 3];
-            lBuf[lIdx++] = p[i * 3 + 1];
-            lBuf[lIdx++] = p[i * 3 + 2];
-            lBuf[lIdx++] = p[j * 3];
-            lBuf[lIdx++] = p[j * 3 + 1];
-            lBuf[lIdx++] = p[j * 3 + 2];
-          }
-        }
-      lGeo.attributes.position.array.set(lBuf);
-      lGeo.attributes.position.needsUpdate = true;
-      lGeo.setDrawRange(0, lIdx / 3);
-      renderer.render(scene, camera);
-    };
-    animate();
-
-    const onResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    };
-    window.addEventListener("resize", onResize);
-    return () => {
-      cancelAnimationFrame(id);
-      window.removeEventListener("resize", onResize);
-      renderer.dispose();
-    };
-  }, []);
-
   const pc = useCounter(stats.projects);
   const mc = useCounter(stats.mcus);
   const kc = useCounter(stats.keys);
@@ -302,11 +281,8 @@ const Landing = () => {
     >
       {/* ══ HERO ══ */}
       <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 py-28 overflow-hidden">
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 w-full h-full"
-          style={{ opacity: 0.5, zIndex: 0 }}
-        />
+        {/* ── Zero-dependency particle network (pure SVG) ── */}
+        <ParticleBackground />
 
         {/* bg layers */}
         <div
@@ -377,17 +353,12 @@ const Landing = () => {
           transition={{ duration: 0.6 }}
           className="absolute top-0 inset-x-0 z-30 flex items-center justify-between px-8 py-5"
         >
-          <div className="flex items-center gap-2.5">
-            {/* <div className="w-7 h-7 rounded-lg bg-teal-600 flex items-center justify-center">
-              <Activity className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
-            </div> */}
-            <span
-              className="text-sm font-semibold text-slate-200 tracking-tight"
-              style={{ fontFamily: "'Syne', sans-serif" }}
-            >
-              IoT<span className="text-teal-400">Hub</span>
-            </span>
-          </div>
+          <span
+            className="text-sm font-semibold text-slate-200 tracking-tight"
+            style={{ fontFamily: "'Syne', sans-serif" }}
+          >
+            IoT<span className="text-teal-400">Hub</span>
+          </span>
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate("/login")}
@@ -477,10 +448,10 @@ const Landing = () => {
           className="relative z-10 mt-20 w-full max-w-3xl grid grid-cols-3 gap-px bg-slate-800/40 rounded-2xl overflow-hidden border border-slate-700/50"
         >
           {[
-            { label: "Your Projects", value: pc, suffix: "" },
-            { label: "Microcontrollers", value: mc, suffix: "" },
-            { label: "Device Keys", value: kc, suffix: "" },
-          ].map(({ label, value, suffix }) => (
+            { label: "Your Projects", value: pc },
+            { label: "Microcontrollers", value: mc },
+            { label: "Device Keys", value: kc },
+          ].map(({ label, value }) => (
             <div
               key={label}
               className="flex flex-col items-center py-7 gap-1 bg-slate-900/70"
@@ -490,7 +461,6 @@ const Landing = () => {
                 style={{ fontFamily: "'Syne', sans-serif" }}
               >
                 {value}
-                {suffix}
               </span>
               <span className="text-slate-500 text-xs uppercase tracking-wide">
                 {label}
@@ -638,7 +608,6 @@ const Landing = () => {
             </h2>
           </motion.div>
           <div className="relative">
-            {/* connector line */}
             <div className="absolute left-[22px] top-6 bottom-6 w-px bg-gradient-to-b from-teal-600/60 via-teal-800/30 to-transparent hidden sm:block" />
             <motion.div
               variants={stagger}
