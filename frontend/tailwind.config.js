@@ -20,9 +20,6 @@ module.exports = {
       backgroundImage: {
         'overlay-image': "linear-gradient(rgba(255, 255, 255, 0.5), rgba(225, 255, 255, 0.5)), url('/iot.png')",
       },
-      danger: {
-        DEFAULT: "hsl(var(--destructive))",
-      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -36,6 +33,9 @@ module.exports = {
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
+        },
+        danger: {
+        DEFAULT: "hsl(var(--destructive))",
         },
         tertiary: {
           DEFAULT: "hsl(var(--tertiary))",
