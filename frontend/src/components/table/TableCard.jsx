@@ -44,7 +44,7 @@ const TableCard = ({ sensorData, sensors, handleDelete }) => {
       return {
         id: dataPoint.id || `${dataPoint.sensorId}-${dataPoint.timestamp}`,
         sensorName: sensor ? sensor.name : "Unknown",
-        sensorType: sensor ? sensor.type.toLowerCase() : "Unknown",
+        sensorType: (sensor?.type ?? "unknown").toLowerCase(),
         value: dataPoint.value,
         timestamp: formattedTimestamp,
         status: isOnline ? "Online" : "Offline",
