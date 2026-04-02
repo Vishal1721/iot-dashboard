@@ -113,7 +113,7 @@ const LiveTracking = () => {
           ...sensor,
           id: sensor._id,
           name: sensor.sensorName,
-          type: sensor.sensorMode?.toUpperCase(),
+          type: (sensor.sensorMode ?? "").toUpperCase(),
         }));
         setSensors(normalizedSensors);
       } catch (error) {
