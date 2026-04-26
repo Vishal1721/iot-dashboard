@@ -130,8 +130,7 @@ const router = (io) => {
       deleteSensorData(req, res);
     },
   );
-  // Delete multiple sensor data
-  // router.delete('/projects/:projectId/sensor/:sensorId/deleteData', authenticateToken, deleteMultipleSensorData);
+  
   router.post(
     "/projects/:projectId/sensor/:sensorId/sendDataFromWeb",
     authenticateToken,
