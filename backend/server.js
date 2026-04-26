@@ -21,8 +21,6 @@ const io = new Server(server, {
   cors: {
     origin: "*",
   },
-
-  // ⭐ THIS LINE FIXES ESP32 CONNECTION
   allowEIO3: true,
 
   transports: ["websocket", "polling"],
