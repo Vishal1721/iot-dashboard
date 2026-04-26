@@ -140,7 +140,7 @@ const router = (io) => {
     },
   );
   //get sensor data by sensor name & project Name (WebSocket enabled)
-  router.post(
+  router.get(
     "/projects/:projectName/sensor/:sensorName/getValue",
     verifyDevice,
     (req, res) => {
