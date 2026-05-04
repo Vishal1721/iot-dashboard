@@ -15,7 +15,7 @@ A full-stack IoT system that enables **real-time monitoring and control of senso
 * 📊 Live dashboard visualization
 * 🔐 Secure device authentication using Device Key
 * 💡 Remote device control (LED, switches)
-* ⚡ Scalable architecture (Railway deployment ready)
+* ⚡ Scalable architecture (Render deployment ready)
 
 ---
 
@@ -26,7 +26,7 @@ ESP32 / ESP8266 / Raspberry Pi
         ↓
      HTTP API
         ↓
- Node.js Backend (Railway)
+ Node.js Backend (Render)
         ↓
    MongoDB Atlas
         ↓
@@ -74,7 +74,7 @@ ESP32 / ESP8266 / Raspberry Pi
 ### 🔹 Deployment
 
 ![Vercel](https://img.shields.io/badge/Vercel-black?style=for-the-badge\&logo=vercel)
-![Railway](https://img.shields.io/badge/Railway-purple?style=for-the-badge)
+![Render](https://img.shields.io/badge/Railway-purple?style=for-the-badge)
 
 ---
 
@@ -149,7 +149,7 @@ npm run dev
 
 ## 🌍 Deployment
 
-* 🚀 Backend → Railway
+* 🚀 Backend → Render
 * 🌐 Frontend → Vercel
 * ☁️ Database → MongoDB Atlas
 
@@ -157,10 +157,7 @@ npm run dev
 
 ## 📈 Scalability
 
-* Horizontal scaling using Railway replicas
-* Load balancing handled automatically
 * Future-ready for:
-
   * Docker 🐳
   * Kubernetes ☸️
   * MQTT 📡
